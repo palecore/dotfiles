@@ -241,6 +241,7 @@ return {
 			vim.keymap.set("n", "<leader>cp", "<cmd>cprevious<cr>", { desc = "previous quickfix item" })
 			vim.keymap.set("n", "<leader>cP", "<cmd>cfirst<cr>", { desc = "first quickfix item" })
 			vim.keymap.set("n", "<leader>CP", "<cmd>cfirst<cr>", { desc = "first quickfix item" })
+			vim.keymap.set("n", "<leader>co", "<cmd>copen<cr>", { desc = "open quickfix itemlist" })
 			vim.keymap.set("n", "<leader>cc", "<cmd>cclose<cr>", { desc = "close quickfix itemlist" })
 		end,
 	},
