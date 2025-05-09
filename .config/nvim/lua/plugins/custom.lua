@@ -7,6 +7,12 @@ return {
 	{ "tpope/vim-speeddating" },
 	{ "tpope/vim-surround" },
 	{
+		"tpope/vim-dispatch",
+		keys = {
+			{ "<leader>dd", "<cmd>Delete<cr>", id = "delete_this" },
+		},
+	},
+	{
 		-- Convenient commenting out of text blocks
 		"preservim/nerdcommenter",
 		keys = {
