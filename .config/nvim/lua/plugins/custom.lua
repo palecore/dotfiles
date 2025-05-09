@@ -171,23 +171,30 @@ return {
 			local function paste_curfile() vim.fn.expand("%") end
 			local function diagno_prev() vim.diagnostic.jump({ count = 0 - 1, float = true }) end
 			local function diagno_list() vim.diagnostic.setloclist({}) end
-			local function go_to_definition() return vim.lsp.buf.definition({ reuse_win = true }) end
-			local function go_to_typedef() return vim.lsp.buf.definition({ reuse_win = true }) end
+			---Jump to the first item only if there is just only one item.
+			---Otherwise, open quickfix list (but don't switch to it).
+			---@param options vim.lsp.LocationOpts.OnList
+			local function fill_qf_jump_only_if_first(options)
+				vim.fn.setqflist(options.items, " ")
+				if #options.items == 1 then
+					vim.cmd.cfirst()
+				else
+					local cur_win = vim.api.nvim_get_current_win()
+					vim.cmd.copen()
+					vim.api.nvim_set_current_win(cur_win)
+				end
+			end
+			local function go_to_definition()
+				return vim.lsp.buf.definition({ reuse_win = true, on_list = fill_qf_jump_only_if_first })
+			end
+			local function go_to_typedef()
+				return vim.lsp.buf.definition({ reuse_win = true, on_list = fill_qf_jump_only_if_first })
+			end
 			local function go_to_references()
-				return vim.lsp.buf.references({ includeDeclaration = false }, {
-					---Jump to the first item only if there is just only one reference.
-					---Otherwise, open quickfix list (but don't switch to it).
-					on_list = function(options)
-						vim.fn.setqflist(options.items, " ")
-						if #options.items == 1 then
-							vim.cmd.cfirst()
-						else
-							local cur_win = vim.api.nvim_get_current_win()
-							vim.cmd.copen()
-							vim.api.nvim_set_current_win(cur_win)
-						end
-					end,
-				})
+				return vim.lsp.buf.references(
+					{ includeDeclaration = false },
+					{ on_list = fill_qf_jump_only_if_first }
+				)
 			end
 			local rename_symbol = vim.lsp.buf.rename
 			local code_actions = vim.lsp.buf.code_action
