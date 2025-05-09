@@ -28,18 +28,7 @@ return {
 	end,
 	---@type fun(): LazyKeys[]
 	keys = function()
-		---Creates a lazy module which won't be imported until any field of it will be
-		---invoked (as a function).
-		---@return table
-		local function lazy_require(modname)
-			return setmetatable({}, {
-				__index = function(_, k)
-					return function(...) require(modname)[k](...) end
-				end,
-			})
-		end
-
-		local fzf_lua = lazy_require("fzf-lua")
+		local fzf_lua = require("custom-helpers").lazy_require("fzf-lua")
 
 		local fzf_lua_grep_git_files = function()
 			return fzf_lua.grep_project({

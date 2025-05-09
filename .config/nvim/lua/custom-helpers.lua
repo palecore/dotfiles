@@ -52,4 +52,15 @@ function M.lazy_fn(fn, ...)
 	return function() return fn(unpack(args)) end
 end
 
+---Creates a lazy module which won't be imported until any field of it will be
+---invoked (as a function).
+---@return table
+function M.lazy_require(modname)
+	return setmetatable({}, {
+		__index = function(_, k)
+			return function(...) require(modname)[k](...) end
+		end,
+	})
+end
+
 return M
