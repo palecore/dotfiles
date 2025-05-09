@@ -77,7 +77,6 @@ return {
 		-- General, miscellaneous lightweight settings
 		name = "custom-general",
 		dir = "/dev/null",
-		dependencies = { "custom-actions" },
 		config = function()
 			-- helper functions
 
@@ -199,11 +198,12 @@ return {
 			local rename_symbol = vim.lsp.buf.rename
 			local code_actions = vim.lsp.buf.code_action
 			local function window_close() vim.api.nvim_buf_delete(0, { force = true }) end
+			local custom_actions = require("custom-actions")
 
 			-- Define actual keybindings:
 
 			-- Apply (C)ode (F)ormatting:
-			vim.keymap.set({ "n", "v" }, "<leader>cf", CustomActions.format)
+			vim.keymap.set({ "n", "v" }, "<leader>cf", custom_actions.format)
 			-- Jump to next (D)iagnostic:
 			vim.keymap.set("n", "]d", diagno_next)
 			-- Jump to previous (D)iagnostic:

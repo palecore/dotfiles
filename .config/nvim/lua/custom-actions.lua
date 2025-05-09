@@ -71,9 +71,4 @@ function M.enable_lsp(opts)
 	actions_cfg.lsp_enabled.buffer[bufnr] = true
 end
 
----@type LazySpec
-return {
-	name = "custom-actions",
-	dir = "/dev/null",
-	config = function() CustomActions = M end,
-}
+return M

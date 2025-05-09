@@ -63,8 +63,6 @@ return {
 		name = "custom-intellisense",
 		dir = "/dev/null", -- Fake plugin - the whole logic is contained here.
 		dependencies = {
-			-- To leverage custom, context-specific actions
-			"custom-actions",
 			-- To locally set up various language servers, linters etc.:
 			"mason-org/mason.nvim",
 			-- For community-maintained language server configs:
@@ -78,7 +76,7 @@ return {
 			local capabs = require("blink.cmp").get_lsp_capabilities()
 			vim.lsp.config("*", {
 				capabilities = capabs,
-				on_attach = function(_, bufnr) CustomActions.enable_lsp({ buffer = bufnr }) end,
+				on_attach = function(_, bufnr) require("custom-actions").enable_lsp({ buffer = bufnr }) end,
 			})
 
 			-- Adjust some language server configurations according to custom needs:
@@ -134,7 +132,7 @@ return {
 			})
 
 			-- For lua files, format explicitly with stylua (through null-ls):
-			CustomActions.set_lsp_format(
+			require("custom-actions").set_lsp_format(
 				"lua",
 				function() return vim.lsp.buf.format({ async = true, name = "null-ls" }) end
 			)
