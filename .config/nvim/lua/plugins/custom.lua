@@ -168,7 +168,20 @@ return {
 			local function go_to_definition() return vim.lsp.buf.definition({ reuse_win = true }) end
 			local function go_to_typedef() return vim.lsp.buf.definition({ reuse_win = true }) end
 			local function go_to_references()
-				return vim.lsp.buf.references({ includeDeclaration = false }, {})
+				return vim.lsp.buf.references({ includeDeclaration = false }, {
+					---Jump to the first item only if there is just only one reference.
+					---Otherwise, open quickfix list (but don't switch to it).
+					on_list = function(options)
+						vim.fn.setqflist(options.items, " ")
+						if #options.items == 1 then
+							vim.cmd.cfirst()
+						else
+							local cur_win = vim.api.nvim_get_current_win()
+							vim.cmd.copen()
+							vim.api.nvim_set_current_win(cur_win)
+						end
+					end,
+				})
 			end
 			local rename_symbol = vim.lsp.buf.rename
 			local code_actions = vim.lsp.buf.code_action
