@@ -3,7 +3,6 @@
 ---@type LazySpec[]
 return {
 	{ "tpope/vim-eunuch" },
-	{ "tpope/vim-fugitive" },
 	{ "tpope/vim-speeddating" },
 	{ "tpope/vim-surround" },
 	{
