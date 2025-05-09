@@ -2,7 +2,6 @@
 return {
 	"ibhagwan/fzf-lua",
 	cmd = "FzfLua",
-	dependencies = "custom-helpers",
 	config = function()
 		local fzf_lua = require("fzf-lua")
 		fzf_lua.setup({

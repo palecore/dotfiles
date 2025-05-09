@@ -52,9 +52,4 @@ function M.lazy_fn(fn, ...)
 	return function() return fn(unpack(args)) end
 end
 
----@type LazySpec
-return {
-	name = "custom-helpers",
-	dir = "/dev/null",
-	config = function() CustomHelpers = M end,
-}
+return M

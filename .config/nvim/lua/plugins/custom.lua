@@ -35,7 +35,7 @@ return {
 		dependencies = "sickill/vim-monokai", -- basis colorscheme
 		config = function()
 			vim.cmd.colorscheme("monokai")
-			CustomHelpers.on_lazy_done(function()
+			require("custom-helpers").on_lazy_done(function()
 				vim.api.nvim_set_hl(0, "Identifier", { fg = "#7070F0" })
 				vim.api.nvim_set_hl(0, "Operator", { fg = "#f8f8f2", bold = true })
 				vim.api.nvim_set_hl(0, "Constant", { fg = "#ef5939" })
@@ -77,12 +77,12 @@ return {
 		-- General, miscellaneous lightweight settings
 		name = "custom-general",
 		dir = "/dev/null",
-		dependencies = { "custom-actions", "custom-helpers" },
+		dependencies = { "custom-actions" },
 		config = function()
 			-- helper functions
 
-			local lazy_fn = CustomHelpers.lazy_fn
-			local nvim_cmd = CustomHelpers.nvim_cmd
+			local lazy_fn = require("custom-helpers").lazy_fn
+			local nvim_cmd = require("custom-helpers").nvim_cmd
 
 			-- General Options
 			-- ---------------

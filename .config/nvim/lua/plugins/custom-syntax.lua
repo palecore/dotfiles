@@ -20,7 +20,6 @@ return {
 	},
 	{
 		"nvim-treesitter/nvim-treesitter",
-		dependencies = { "custom-helpers" },
 		build = ":TSUpdate",
 		config = function()
 			require("nvim-treesitter.configs").setup({
@@ -50,7 +49,7 @@ return {
 			-- Highlight vimwiki files as markdown:
 			vim.treesitter.language.register("markdown", { "vimwiki" })
 			-- Explicitly highlight variables as identifiers:
-			CustomHelpers.on_lazy_done(
+			require("custom-helpers").on_lazy_done(
 				function() vim.api.nvim_set_hl(0, "@variable", { link = "Identifier" }) end
 			)
 		end,

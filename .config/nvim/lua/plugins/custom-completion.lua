@@ -2,10 +2,6 @@
 return {
 	"saghen/blink.cmp",
 	version = "1.2.0",
-	dependencies = {
-		-- For helper utils:
-		"custom-helpers",
-	},
 	config = function()
 		require("blink.cmp").setup({ ---@type blink.cmp.Config
 			keymap = {
@@ -40,7 +36,7 @@ return {
 			signature = { enabled = true },
 		})
 		-- Highlight kinds of menu items like keywords:
-		CustomHelpers.on_lazy_done(
+		require("custom-helpers").on_lazy_done(
 			function() vim.api.nvim_set_hl(0, "BlinkCmpKind", { link = "Keyword" }) end
 		)
 	end,
