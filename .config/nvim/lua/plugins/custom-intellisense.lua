@@ -1,6 +1,17 @@
 ---@type LazySpec[]
 return {
 	{
+		"dgagn/diagflow.nvim",
+		optional = true,
+		event = "LspAttach",
+		opts = {
+			scope = "line",
+			placement = "inline",
+			max_width = 32,
+			inline_padding_left = 4,
+		},
+	},
+	{
 		"nvimtools/none-ls.nvim",
 		dependencies = "nvim-lua/plenary.nvim",
 		config = function()
