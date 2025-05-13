@@ -219,6 +219,14 @@ return {
 				print(curr_wrap and "wrap" or "nowrap")
 			end
 
+			local function run_this_file()
+				-- TODO: if absent file with a shebang line - write into temp file & run
+				vim.cmd.split()
+				vim.cmd.terminal("%:p")
+			end
+			action_store.set_action("run_this_file", run_this_file)
+			local function run_this_file_action() action_store.exec_action("run_this_file") end
+
 			-- Define actual keybindings:
 
 			-- Apply (C)ode (F)ormatting:
@@ -259,6 +267,10 @@ return {
 			vim.keymap.set("n", "<leader>ga", "<cmd>Git add %<cr>")
 			--(W)indow: (C)lose it for good:
 			vim.keymap.set("n", "<C-W>C", window_close)
+			--(R)un this file:
+			vim.keymap.set("n", "<leader>rR", run_this_file_action)
+			vim.keymap.set("n", "<leader>Rr", run_this_file_action)
+			vim.keymap.set("n", "<leader>RR", run_this_file_action)
 			--(T)oggle (W)rapping option:
 			vim.keymap.set("n", "<leader>tw", toggle_wrap)
 
