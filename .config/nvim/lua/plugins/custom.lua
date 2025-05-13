@@ -114,8 +114,9 @@ return {
 			vim.opt.listchars = "extends:»,precedes:…,tab:¦ ,trail:…"
 			-- Other cool glyphs: ·…»¬→˲¦
 			vim.o.wrap = false
-			vim.o.textwidth = 80
-			vim.opt.colorcolumn = { 80 }
+			local default_text_width = 80
+			vim.o.textwidth = default_text_width
+			vim.o.colorcolumn = tostring(default_text_width)
 
 			vim.o.breakat = " {([:,."
 			vim.o.showbreak = "↳·"
@@ -199,6 +200,20 @@ return {
 			local function window_close() vim.api.nvim_buf_delete(0, { force = true }) end
 			local custom_actions = require("custom-actions")
 
+			local function toggle_wrap()
+				local prev_wrap = vim.api.nvim_get_option_value("wrap", {})
+				local curr_wrap = not prev_wrap
+				vim.api.nvim_set_option_value("wrap", curr_wrap, {})
+				if curr_wrap then
+					vim.api.nvim_set_option_value("textwidth", 0, {})
+					vim.api.nvim_set_option_value("colorcolumn", "0", {})
+				else
+					vim.api.nvim_set_option_value("textwidth", default_text_width, {})
+					vim.api.nvim_set_option_value("colorcolumn", tostring(default_text_width), {})
+				end
+				print(curr_wrap and "wrap" or "nowrap")
+			end
+
 			-- Define actual keybindings:
 
 			-- Apply (C)ode (F)ormatting:
@@ -239,6 +254,8 @@ return {
 			vim.keymap.set("n", "<leader>ga", "<cmd>Git add %<cr>")
 			--(W)indow: (C)lose it for good:
 			vim.keymap.set("n", "<C-W>C", window_close)
+			--(T)oggle (W)rapping option:
+			vim.keymap.set("n", "<leader>tw", toggle_wrap)
 
 			-- Go through the quickfix list without entering command mode:
 			vim.keymap.set("n", "<leader>cn", "<cmd>cnext<cr>", { desc = "next quickfix item" })
