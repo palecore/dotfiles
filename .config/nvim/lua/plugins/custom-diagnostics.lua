@@ -7,6 +7,13 @@ end
 
 local function trouble_open_refs() require("trouble.api").open({ mode = "lsp_references" }) end
 
+local function trouble_open_defs()
+	require("trouble.api").open({
+		mode = "lsp_definitions",
+		sections = { "lsp_definitions", "lsp_declarations", "lsp_type_definitions" },
+	})
+end
+
 ---@type LazySpec
 return {
 	"folke/trouble.nvim",
@@ -84,6 +91,8 @@ return {
 	config = function(_, opts)
 		require("trouble").setup(opts)
 		require("custom-action-store").set_action("goto_refs", trouble_open_refs)
+		require("custom-action-store").set_action("goto_defs", trouble_open_defs)
+		require("custom-action-store").set_action("goto_typedefs", trouble_open_defs)
 		require("custom-helpers").on_lazy_done(function()
 			vim.api.nvim_set_hl(0, "TroubleIndent", { link = "TroubleNormal" })
 			vim.api.nvim_set_hl(0, "TroubleIndentWs", { link = "TroubleNormal" })
