@@ -159,6 +159,8 @@ return {
 			-- General Keybindings
 			-- -------------------
 
+			local action_store = require("custom-action-store")
+
 			-- Define helper functions:
 			local function diagno_next() vim.diagnostic.jump({ count = 0 + 1, float = true }) end
 			local function cd_to_here()
@@ -195,6 +197,11 @@ return {
 					{ on_list = fill_qf_jump_only_if_first }
 				)
 			end
+			action_store.set_action("goto_refs", go_to_references)
+			local function goto_refs_action()
+				action_store.exec_action("goto_refs")
+			end
+
 			local rename_symbol = vim.lsp.buf.rename
 			local code_actions = vim.lsp.buf.code_action
 			local function window_close() vim.api.nvim_buf_delete(0, { force = true }) end
@@ -229,7 +236,7 @@ return {
 			vim.keymap.set("n", "gd", go_to_definition)
 			vim.keymap.set("n", "gD", go_to_typedef)
 			-- (G)o to (R)eferences:
-			vim.keymap.set("n", "gr", go_to_references)
+			vim.keymap.set("n", "gr", goto_refs_action)
 			-- Clear unnecessary default `gr...` keybindings:
 			vim.keymap.del("n", "gri")
 			vim.keymap.del("n", "gra")
