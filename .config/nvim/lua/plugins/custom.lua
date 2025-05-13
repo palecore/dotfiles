@@ -203,7 +203,6 @@ return {
 			local rename_symbol = vim.lsp.buf.rename
 			local code_actions = vim.lsp.buf.code_action
 			local function window_close() vim.api.nvim_buf_delete(0, { force = true }) end
-			local custom_actions = require("custom-actions")
 
 			local function toggle_wrap()
 				local prev_wrap = vim.api.nvim_get_option_value("wrap", {})
