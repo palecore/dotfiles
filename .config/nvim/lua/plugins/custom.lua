@@ -188,9 +188,15 @@ return {
 			local function go_to_definition()
 				return vim.lsp.buf.definition({ reuse_win = true, on_list = fill_qf_jump_only_if_first })
 			end
+			action_store.set_action("goto_defs", go_to_definition)
+			local function goto_defs_action() action_store.exec_action("goto_defs") end
+
 			local function go_to_typedef()
 				return vim.lsp.buf.definition({ reuse_win = true, on_list = fill_qf_jump_only_if_first })
 			end
+			action_store.set_action("goto_typedefs", go_to_typedef)
+			local function goto_typedefs_action() action_store.exec_action("goto_typedefs") end
+
 			local function go_to_references()
 				return vim.lsp.buf.references(
 					{ includeDeclaration = false },
@@ -242,8 +248,8 @@ return {
 			vim.keymap.set("n", "<leader>qq", diagno_list)
 			vim.keymap.set("n", "<leader>rn", rename_symbol)
 			vim.keymap.set("n", "<leader>ca", code_actions)
-			vim.keymap.set("n", "gd", go_to_definition)
-			vim.keymap.set("n", "gD", go_to_typedef)
+			vim.keymap.set("n", "gd", goto_defs_action)
+			vim.keymap.set("n", "gD", goto_typedefs_action)
 			-- (G)o to (R)eferences:
 			vim.keymap.set("n", "gr", goto_refs_action)
 			-- Clear unnecessary default `gr...` keybindings:
