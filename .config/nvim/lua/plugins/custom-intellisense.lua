@@ -52,6 +52,7 @@ return {
 				"neotest",
 				"none-ls.nvim",
 				"plenary.nvim",
+				"trouble.nvim",
 				"vim.lsp",
 				"vim.uv",
 			},
