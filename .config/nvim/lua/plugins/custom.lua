@@ -198,9 +198,7 @@ return {
 				)
 			end
 			action_store.set_action("goto_refs", go_to_references)
-			local function goto_refs_action()
-				action_store.exec_action("goto_refs")
-			end
+			local function goto_refs_action() action_store.exec_action("goto_refs") end
 
 			local rename_symbol = vim.lsp.buf.rename
 			local code_actions = vim.lsp.buf.code_action
