@@ -227,10 +227,14 @@ return {
 			action_store.set_action("run_this_file", run_this_file)
 			local function run_this_file_action() action_store.exec_action("run_this_file") end
 
+			local function format() vim.lsp.buf.format({ async = true }) end
+			action_store.set_action("format", format)
+			local function format_action() action_store.exec_action("format") end
+
 			-- Define actual keybindings:
 
 			-- Apply (C)ode (F)ormatting:
-			vim.keymap.set({ "n", "v" }, "<leader>cf", custom_actions.format)
+			vim.keymap.set({ "n", "v" }, "<leader>cf", format_action)
 			-- Jump to next (D)iagnostic:
 			vim.keymap.set("n", "]d", diagno_next)
 			-- Jump to previous (D)iagnostic:

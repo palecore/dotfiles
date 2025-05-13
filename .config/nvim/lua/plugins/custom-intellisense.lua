@@ -76,7 +76,6 @@ return {
 			local capabs = require("blink.cmp").get_lsp_capabilities()
 			vim.lsp.config("*", {
 				capabilities = capabs,
-				on_attach = function(_, bufnr) require("custom-actions").enable_lsp({ buffer = bufnr }) end,
 			})
 
 			-- Adjust some language server configurations according to custom needs:
@@ -132,9 +131,10 @@ return {
 			})
 
 			-- For lua files, format explicitly with stylua (through null-ls):
-			require("custom-actions").set_lsp_format(
-				"lua",
-				function() return vim.lsp.buf.format({ async = true, name = "null-ls" }) end
+			require("custom-action-store").set_action(
+				"format",
+				function() vim.lsp.buf.format({ async = true, name = "null-ls" }) end,
+				{ filetype = "lua" }
 			)
 
 			vim.lsp.config("teal_ls", { single_file_support = true })
