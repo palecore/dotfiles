@@ -67,11 +67,17 @@ function M.set_action(action_name, action_fn, scope)
 		buf_actions[action_name] = action_fn
 		action_store.buffer[scope.buffer] = buf_actions
 	elseif scope and scope.window then
-		action_store.window[scope.window][action_name] = action_fn
+		local win_actions = action_store.window[scope.window] or {}
+		win_actions[action_name] = action_fn
+		action_store.window[scope.window] = win_actions
 	elseif scope and scope.tabpage then
-		action_store.tabpage[scope.tabpage][action_name] = action_fn
+		local tab_actions = action_store.tabpage[scope.tabpage] or {}
+		tab_actions[action_name] = action_fn
+		action_store.tabpage[scope.tabpage] = tab_actions
 	elseif scope and scope.filetype then
-		action_store.filetype[scope.filetype][action_name] = action_fn
+		local ft_actions = action_store.filetype[scope.filetype] or {}
+		ft_actions[action_name] = action_fn
+		action_store.filetype[scope.filetype] = ft_actions
 	else
 		action_store.global[action_name] = action_fn
 	end
