@@ -2,6 +2,9 @@
 return {
 	"saghen/blink.cmp",
 	version = "1.2.0",
+	dependencies = {
+		"moyiz/blink-emoji.nvim", -- for emoji completion
+	},
 	config = function()
 		require("blink.cmp").setup({ ---@type blink.cmp.Config
 			keymap = {
@@ -32,6 +35,17 @@ return {
 				},
 				documentation = { auto_show = true },
 				ghost_text = { enabled = true },
+			},
+			sources = {
+				default = { "emoji", "lsp", "path", "snippets", "buffer" },
+				providers = {
+					emoji = {
+						module = "blink-emoji",
+						name = "Emoji",
+						score_offset = 15,
+						opts = { insert = true },
+					},
+				},
 			},
 			signature = { enabled = true },
 		})
