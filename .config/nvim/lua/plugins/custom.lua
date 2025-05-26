@@ -167,9 +167,9 @@ return {
 				nvim_cmd({ "cd", "%:h" })
 				print(nvim_cmd("pwd"))
 			end
-			local function paste_strfdate() vim.fn.strftime("%Y-%m-%d") end
-			local function paste_strftime() vim.fn.strftime("%H:%M") end
-			local function paste_curfile() vim.fn.expand("%") end
+			local function paste_strfdate() return vim.fn.strftime("%Y-%m-%d") end
+			local function paste_strftime() return vim.fn.strftime("%H:%M") end
+			local function paste_curfile() return vim.fn.expand("%") end
 			local function diagno_prev() vim.diagnostic.jump({ count = 0 - 1, float = true }) end
 			local function diagno_list() vim.diagnostic.setloclist({}) end
 			---Jump to the first item only if there is just only one item.
