@@ -1,6 +1,7 @@
 ---@type LazySpec
 return {
 	"stevearc/oil.nvim",
+	lazy = false, -- has to be always loaded replace netrw in opening dirs
 	cmd = "Oil",
 	keys = {
 		{ "-", function() require("oil").open() end, id = "oil_open_parent_dir" },
