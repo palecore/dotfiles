@@ -252,10 +252,15 @@ return {
 			vim.keymap.set("n", "gD", goto_typedefs_action)
 			-- (G)o to (R)eferences:
 			vim.keymap.set("n", "gr", goto_refs_action)
-			-- Clear unnecessary default `gr...` keybindings:
+			-- Clear unnecessary default `gr...` keybindings
+            -- (overwrite them first):
+			vim.keymap.set("n", "gri", "")
 			vim.keymap.del("n", "gri")
+			vim.keymap.set("n", "gra", "")
 			vim.keymap.del("n", "gra")
+			vim.keymap.set("n", "grn", "")
 			vim.keymap.del("n", "grn")
+			vim.keymap.set("n", "grr", "")
 			vim.keymap.del("n", "grr")
 
 			-- (C)hange (D)irectory to that of current file's:
