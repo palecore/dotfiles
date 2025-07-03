@@ -225,11 +225,46 @@ return {
 			end
 
 			local function run_this_file()
-				-- TODO: if absent file with a shebang line - write into temp file & run
-				vim.cmd.split()
-				vim.cmd.terminal("%:p")
+				local cur_file = vim.api.nvim_buf_get_name(0)
+				local is_executable = vim.fn.executable(cur_file) == 1
+				-- "executable file" case:
+				if is_executable then
+					nvim_cmd({ "split" })
+					nvim_cmd({ "enew" })
+					nvim_cmd({ "terminal", cur_file })
+					return
+				end
+				-- "script buffer or file" case:
+				local lines = vim.api.nvim_buf_get_lines(0, 0, -1, true)
+				local has_shebang_line = vim.startswith(lines[1] or "", "#!")
+				if has_shebang_line then
+					local temp_file = vim.fn.tempname()
+					vim.fn.writefile(lines, temp_file, "")
+					vim.uv.fs_chmod(temp_file, 0007)
+					local function on_exit() vim.fn.delete(temp_file, "") end
+					nvim_cmd({ "split" })
+					nvim_cmd({ "enew" })
+					vim.fn.jobstart({ temp_file }, { term = true, on_exit = on_exit })
+					return
+				end
 			end
+			--
+			local function tell_error(msg) vim.notify(msg, vim.log.levels.ERROR) end
+			local function run_this_nlua_file()
+				local lines = vim.api.nvim_buf_get_lines(0, 0, -1, true)
+				local chunk, err = loadstring(table.concat(lines, "\n"))
+				if err then
+					tell_error("Error loading Lua chunk:\n" .. err)
+				elseif not chunk then
+					tell_error("Unknown error loading Lua chunk!")
+				else
+					chunk()
+				end
+			end
+			--
 			action_store.set_action("run_this_file", run_this_file)
+			action_store.set_action("run_this_file", run_this_nlua_file, { filetype = "lua" })
+			--
 			local function run_this_file_action() action_store.exec_action("run_this_file") end
 
 			local function format() vim.lsp.buf.format({ async = true }) end
