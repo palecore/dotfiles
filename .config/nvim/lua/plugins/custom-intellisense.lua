@@ -54,7 +54,7 @@ return {
 				"plenary.nvim",
 				"trouble.nvim",
 				"vim.lsp",
-				"vim.uv",
+				{ path = "${3rd}/luv/library", words = { "vim%.uv" } }, -- Only load luvit types when the `vim.uv` word is found
 			},
 		},
 	},
