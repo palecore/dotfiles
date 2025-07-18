@@ -43,51 +43,64 @@ return {
 		end
 
 		local function fzf_lua_custom_git_branches()
-			local function system_or_notify(_cmd)
-				local output = vim.fn.system(_cmd)
-				if vim.v.shell_error ~= 0 then vim.notify_once(output, vim.log.levels.ERROR) end
+			local function system_or_notify(_cmd, on_success_fn)
+				on_success_fn = on_success_fn or function() end
+				local output = ""
+				vim.system(_cmd, {
+					stdout = function(err, data)
+						if not err and data then output = output .. data end
+					end,
+					stderr = function(err, data)
+						if not err and data then output = output .. data end
+					end,
+				}, function(proc)
+					if proc.code ~= 0 then
+						vim.notify_once(output, vim.log.levels.ERROR)
+					else
+						on_success_fn()
+					end
+				end)
 			end
 			return fzf_lua.git_branches({
 				headers = {}, -- because we set a custom header below
 				fzf_opts = {
 					["--header"] = ":: " .. table.concat({
-						"<ctrl-x> to delete",
-						"<alt-x> to force-delete",
+						"<alt-x> to delete",
+						"<alt-X> to force-delete",
 					}, "|"),
 				},
 				actions = {
 					["default"] = function(selected, options)
 						if #selected == 0 then
 							local new_branch = options.__call_opts.query
-							local new_branch_esc = vim.fn.shellescape(new_branch)
-							system_or_notify("git switch -c " .. new_branch_esc)
-							vim.notify("Created branch " .. new_branch_esc)
+							system_or_notify(
+								{ "git", "switch", "-c", new_branch },
+								function() vim.notify("Created branch " .. new_branch) end
+							)
 							return
 						end
 
 						local branch = selected[1]:sub(3)
-						local branch_esc = vim.fn.shellescape(branch)
-						if branch:match("^remotes/origin/..*") then
-							local new_branch = branch:sub(16)
-							local new_branch_esc = vim.fn.shellescape(new_branch)
-							system_or_notify("git switch -- " .. new_branch_esc)
-							vim.notify("Checked out to branch " .. new_branch_esc)
-						else
-							system_or_notify("git switch -- " .. branch_esc)
-							vim.notify("Checked out to branch " .. branch_esc)
-						end
+						-- if it's a nonexistent remote branch, cut the remote prefix:
+						if branch:match("^remotes/origin/..*") then branch = branch:sub(16) end
+						system_or_notify(
+							{ "git", "switch", "--", branch },
+							function() vim.notify("Checked out to branch " .. branch) end
+						)
 					end,
-					["ctrl-x"] = {
+					["ctrl-a"] = false, -- by default it seems to create a branch
+					["alt-x"] = {
 						fn = function(selected)
 							if not selected[1] then return end
 							local branch = string.sub(selected[1], 3)
-							local branch_esc = vim.fn.shellescape(branch)
-							system_or_notify("git branch -d " .. branch_esc)
-							vim.notify("Deleted branch " .. branch_esc)
+							system_or_notify(
+								{ "git", "branch", "-d", branch },
+								function() vim.notify("Deleted branch " .. branch) end
+							)
 						end,
 						reload = true,
 					},
-					["alt-x"] = {
+					["alt-X"] = {
 						fn = function(selected)
 							if not selected[1] then return end
 							local branch = string.sub(selected[1], 3)
@@ -96,8 +109,10 @@ return {
 							if utils.input("Force-delete branch " .. branch_esc .. "? [y/N] ") ~= "y" then
 								return
 							end
-							system_or_notify("git branch -D " .. branch_esc)
-							vim.notify("Force-deleted branch " .. branch_esc)
+							system_or_notify(
+								{ "git", "branch", "-D", branch },
+								function() vim.notify("Force-deleted branch " .. branch) end
+							)
 						end,
 						reload = true,
 					},
