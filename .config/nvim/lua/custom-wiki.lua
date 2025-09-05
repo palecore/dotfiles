@@ -53,4 +53,17 @@ function M.vimwiki_init_fn(wiki_dirs)
 	return function() vimwiki_init(wiki_dirs) end
 end
 
+---@param opts { wiki_dirs: custom_wiki.WikiDir[] }
+---@return LazySpec
+function M.vimwiki_lazy_spec(opts)
+	opts = opts or {}
+	local wiki_dirs = opts.wiki_dirs or {}
+	---@type LazySpec
+	return {
+		"vimwiki/vimwiki",
+		keys = M.vimwiki_keys(),
+		init = M.vimwiki_init_fn(wiki_dirs)
+	}
+end
+
 return M
