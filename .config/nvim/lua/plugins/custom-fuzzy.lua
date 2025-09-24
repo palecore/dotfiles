@@ -43,23 +43,28 @@ return {
 		end
 
 		local function fzf_lua_custom_git_branches()
-			local function system_or_notify(_cmd, on_success_fn)
-				on_success_fn = on_success_fn or function() end
+			local function tell_error(msg)
+				vim.notify(msg, vim.log.levels.ERROR)
+				pcall(function() error(msg) end)
+			end
+			local function tell_info(msg) vim.notify(msg) end
+			local function system_or_notify(_cmd)
 				local output = ""
-				vim.system(_cmd, {
-					stdout = function(err, data)
-						if not err and data then output = output .. data end
-					end,
-					stderr = function(err, data)
-						if not err and data then output = output .. data end
-					end,
-				}, function(proc)
-					if proc.code ~= 0 then
-						vim.notify_once(output, vim.log.levels.ERROR)
-					else
-						on_success_fn()
-					end
-				end)
+				local proc = vim
+					.system(_cmd, {
+						stdout = function(err, data)
+							if not err and data then output = output .. data end
+						end,
+						stderr = function(err, data)
+							if not err and data then output = output .. data end
+						end,
+					})
+					:wait()
+				if proc.code ~= 0 then
+					tell_error(_cmd[1] .. ": " .. output)
+					return false
+				end
+				return true
 			end
 			return fzf_lua.git_branches({
 				headers = {}, -- because we set a custom header below
@@ -73,30 +78,27 @@ return {
 					["default"] = function(selected, options)
 						if #selected == 0 then
 							local new_branch = options.__call_opts.query
-							system_or_notify(
-								{ "git", "switch", "-c", new_branch },
-								function() vim.notify("Created branch " .. new_branch) end
-							)
+							if system_or_notify({ "git", "switch", "-c", new_branch }) then
+								tell_info("Created branch " .. new_branch)
+							end
 							return
 						end
 
 						local branch = selected[1]:sub(3)
 						-- if it's a nonexistent remote branch, cut the remote prefix:
 						if branch:match("^remotes/origin/..*") then branch = branch:sub(16) end
-						system_or_notify(
-							{ "git", "switch", "--", branch },
-							function() vim.notify("Checked out to branch " .. branch) end
-						)
+						if system_or_notify({ "git", "switch", "--", branch }) then
+							tell_info("Checked out to branch " .. branch)
+						end
 					end,
 					["ctrl-a"] = false, -- by default it seems to create a branch
 					["alt-x"] = {
 						fn = function(selected)
 							if not selected[1] then return end
 							local branch = string.sub(selected[1], 3)
-							system_or_notify(
-								{ "git", "branch", "-d", branch },
-								function() vim.notify("Deleted branch " .. branch) end
-							)
+							if system_or_notify({ "git", "branch", "-d", branch }) then
+								tell_info("Deleted branch " .. branch)
+							end
 						end,
 						reload = true,
 					},
@@ -104,15 +106,12 @@ return {
 						fn = function(selected)
 							if not selected[1] then return end
 							local branch = string.sub(selected[1], 3)
-							local branch_esc = vim.fn.shellescape(branch)
 							local utils = require("fzf-lua.utils")
-							if utils.input("Force-delete branch " .. branch_esc .. "? [y/N] ") ~= "y" then
-								return
+							local confirm = utils.input("Force-delete branch " .. branch .. "? [y/N] ")
+							if confirm ~= "y" then return end
+							if system_or_notify({ "git", "branch", "-D", branch }) then
+								tell_info("Force-deleted branch " .. branch)
 							end
-							system_or_notify(
-								{ "git", "branch", "-D", branch },
-								function() vim.notify("Force-deleted branch " .. branch) end
-							)
 						end,
 						reload = true,
 					},
