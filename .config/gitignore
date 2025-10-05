@@ -1,0 +1,17 @@
+# vim: ft=gitignore:
+
+# bashrc - maintained by yadm bootstrap:
+/.bashrc
+/.cache/
+/.config/git/config
+# htoprc - technical & maintained by htop itself
+/.config/htop/htoprc
+/.config/nvim/lazy-lock.json
+# tmux.conf - maintained by yadm bootstrap
+/.config/tmux/tmux.conf
+# .profile - maintained by yadm bootstrap
+/.profile
+/.ssh/
+
+!/.ssh/*.conf
+!/.ssh/ssh_config
