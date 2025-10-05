@@ -23,7 +23,8 @@ end
 return {
 	"folke/trouble.nvim",
 	-- This needs to run after custom-general, to properly overwrite custom actions:
-	dependencies = "custom-general",
+	-- (NOTE: as a workaround, currently general configs are kept under lualine)
+	dependencies = "nvim-lualine/lualine.nvim",
 	---@type trouble.Config
 	opts = {
 		auto_jump = true,
