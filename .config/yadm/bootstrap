@@ -1,0 +1,115 @@
+#!/bin/sh
+# vim: set ft=bash sw=2 ts=2 noet:
+# shellcheck shell=bash
+
+# /bin/sh for portability, will use bash anyway:
+if [ -z "${BASH_VERSION-}" ]; then exec bash "$0" "$@"; fi
+
+set -eu
+
+# exit codes
+# ----------
+
+WOULD_OVERWRITE_FILE_CODE=2
+
+# utility functions
+# -----------------
+
+panic_would_overwrite_file() {
+	file_path="${1:?}"
+	>&2 echo "ERROR: '$file_path' already exists! Will not overwrite."
+	exit $((WOULD_OVERWRITE_FILE_CODE))
+}
+
+declare -a FILES_TO_OVERWRITE=()
+declare -A FILE_PATH_TO_CONTENTS=()
+declare -a FILES_SKIPPED=()
+prepare_write() {
+	# prepare input params:
+	local file_path="${1:?}"
+	shift
+	local contents
+	if [ -n "${1-}" ]; then
+		contents="${1-}"
+		shift
+	else
+		contents=$(cat)
+	fi
+	#
+	# if there's no such file - simply build it:
+	if ! [ -f "$file_path" ]; then
+		FILE_PATH_TO_CONTENTS["$file_path"]="$contents"
+		return 0
+	fi
+	# if there is such file - check if it differs from the recipy:
+	local -a md5sums
+	readarray md5sums < <(md5sum "$file_path" <(cat <<< "$contents"))
+	file_md5sum=${md5sums[0]%% *}
+	contents_md5sum=${md5sums[1]%% *}
+	# if the file differs - defer asking user for overwrite:
+	if [ "$file_md5sum" != "$contents_md5sum" ]; then
+		FILES_TO_OVERWRITE+=("$file_path")
+		FILE_PATH_TO_CONTENTS["$file_path"]="$contents"
+		return 0
+	fi
+	# if the file is already same/built - skip it:
+	FILES_SKIPPED+=("$file_path")
+}
+
+tell_info() {
+	>&2 echo INFO: "$@"
+}
+
+# main
+# ----
+
+tell_info "Pointing gitignore file to '~/.config/gitignore'..."
+git \
+	--work-tree ~ \
+	--git-dir ~/.local/share/yadm/repo.git \
+	config set --local core.excludesFile '~/.config/gitignore' \
+;
+tell_info 'Pointed.'
+
+prepare_write ~/.bashrc << 'SH'
+for script_file_path in ~/.config/sh.d/*.{,ba}sh; do
+	. "$script_file_path" || {
+		>&2 echo "WARN: Sourcing '$script_file_path' failed! Carrying on..."
+	}
+done
+SH
+
+prepare_write ~/.profile << 'SH'
+for script_file_path in ~/.config/profile.d/*.sh; do
+	. "$script_file_path" || {
+		>&2 echo "WARN: Sourcing '$script_file_path' failed! Carrying on..."
+	}
+done
+SH
+
+if [ "${#FILES_TO_OVERWRITE[@]}" -gt 0 ]; then
+	>&2 echo
+	>&2 echo 'CAUTION: Some files to be bootstrapped already exist in the filesystem!'
+	>&2 echo 'They will be overwritten! Review them before proceeding:'
+	>&2 echo
+	>&2 printf %s\\n "${FILES_TO_OVERWRITE[@]}"
+	>&2 echo
+	>&2 printf 'Proceed with writing files? [y/N]: '
+	read -r REPLY
+	if [ "${REPLY,}" != y ]; then
+		>&2 echo 'Bootstrapping cancelled.'
+		exit 0
+	fi
+fi
+
+if [ "${#FILE_PATH_TO_CONTENTS[@]}" -lt 1 ]; then
+	tell_info 'No files to bootstrap. Finished.'
+	exit 0
+fi
+tell_info "Bootstrapping ${#FILE_PATH_TO_CONTENTS[@]} files..."
+for file_path in "${!FILE_PATH_TO_CONTENTS[@]}"; do
+	file_contents="${FILE_PATH_TO_CONTENTS["$file_path"]}"
+	mkdir -p "$(dirname "$file_path")"
+	cat > "$file_path" <<< "$file_contents"
+done
+tell_info "Bootstrapped ${#FILE_PATH_TO_CONTENTS[@]} files."
