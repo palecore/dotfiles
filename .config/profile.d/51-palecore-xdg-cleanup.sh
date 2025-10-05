@@ -1,0 +1,45 @@
+# vim: set ft=sh sw=2 ts=2 noet:
+
+# customize programs to prevent home dir clutter:
+#
+export CABAL_CONFIG="$XDG_CONFIG_HOME/cabal/config"
+export CABAL_DIR="$XDG_CACHE_HOME/cabal"
+export CARGO_HOME="$XDG_DATA_HOME/cargo"
+export CUDA_CACHE_PATH="$XDG_CACHE_HOME/nv"
+export DOCKER_CONFIG="$XDG_STATE_HOME/docker"
+export GHCUP_USE_XDG_DIRS=true
+export GNUPGHOME="$XDG_DATA_HOME/gnupg"
+export GOMODCACHE="$XDG_CACHE_HOME/go/mod"
+export GOPATH="$XDG_DATA_HOME/go"
+export GRADLE_USER_HOME="$XDG_STATE_HOME/gradle"
+export GTK2_RC_FILES="$XDG_CONFIG_HOME"/gtkrc-2.0
+export ICEAUTHORITY="$XDG_CACHE_HOME/ICEauthority"
+export IPFS_PATH="$XDG_DATA_HOME/ipfs"
+export IPYTHONDIR="$XDG_CONFIG_HOME/jupyter"
+export JDTLS_HOME="$XDG_CONFIG_HOME/jdtls"
+export JUPYTER_CONFIG_DIR="$XDG_CONFIG_HOME/jupyter"
+export LESSHISTFILE=-
+export LYNX_CFG="$XDG_CONFIG_HOME/lynx.cfg"
+export MPLAYER_HOME="$XDG_CONFIG_HOME/mplayer"
+export MYPY_CACHE_DIR="$XDG_CACHE_DIR/mypy"
+export NODE_REPL_HISTORY="$XDG_CACHE_HOME/node_repl_history"
+export NPM_CONFIG_USERCONFIG="$XDG_CONFIG_HOME/npm/npmrc"
+export NUGET_PACKAGES="$XDG_CACHE_HOME/NuGetPackages"
+export PASSWORD_STORE_DIR="$XDG_DATA_HOME/pass"
+export PYLINTHOME="$XDG_CACHE_HOME/pylint"
+export PYTHONSTARTUP="$XDG_CONFIG_HOME/pythonrc"
+export RUSTUP_HOME="$XDG_DATA_HOME/rustup"
+export R_ENVIRON_USER="$XDG_CONFIG_HOME/r/Renviron"
+export SCREENRC="$XDG_CONFIG_HOME/screen/screenrc"
+export SQLITE_HISTORY="$XDG_DATA_HOME/sqlite_history"
+export STACK_ROOT="$XDG_DATA_HOME/stack"
+export TEXMFCONFIG="$XDG_CONFIG_HOME/texlive/texmf-config"
+export TEXMFHOME="$XDG_DATA_HOME/texmf"
+export TEXMFVAR="$XDG_CACHE_HOME/texlive/texmf-var"
+export UNISON="$XDG_DATA_HOME/unison"
+export WGETRC="$XDG_CONFIG_HOME/wgetrc"
+export WINEPREFIX="$XDG_DATA_HOME/wineprefixes/default"
+export XAUTHORITY="$XDG_RUNTIME_DIR/Xauthority"
+export XINITRC="$XDG_CONFIG_HOME/xinitrc"
+export _JAVA_OPTIONS=-Djava.util.prefs.userRoot="$XDG_CONFIG_HOME/java"
+
