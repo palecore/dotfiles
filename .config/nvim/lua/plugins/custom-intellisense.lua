@@ -60,14 +60,13 @@ return {
 	},
 	{ "mason-org/mason.nvim", optional = true, opts = {} },
 	{
-		-- General intellisense configuration
-		name = "custom-intellisense",
-		dir = "/dev/null", -- Fake plugin - the whole logic is contained here.
+		-- General Intellisense Configuration
+		-- ----------------------------------
+		-- For community-maintained language server configs:
+		"neovim/nvim-lspconfig",
 		dependencies = {
 			-- To locally set up various language servers, linters etc.:
 			"mason-org/mason.nvim",
-			-- For community-maintained language server configs:
-			"neovim/nvim-lspconfig",
 			-- For extending LSP capabilities with autocompletion-supported ones:
 			"saghen/blink.cmp",
 		},
