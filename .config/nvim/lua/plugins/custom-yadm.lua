@@ -12,16 +12,7 @@ local function toggle_yadm()
 	end
 end
 
----@type LazySpec
-return {
-	name = "custom-yadm",
-	dir = "/dev/null", -- Fake plugin - all logic contained here.
-	keys = {
-		{
-			"<leader>ty",
-			toggle_yadm,
-			id = "ty",
-			desc = "Toggle yadm environment",
-		},
-	},
-}
+vim.keymap.set("n", "<leader>ty", toggle_yadm)
+
+---@type LazySpec[]
+return {}
