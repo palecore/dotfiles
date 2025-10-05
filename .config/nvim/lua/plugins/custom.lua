@@ -29,9 +29,7 @@ return {
 	},
 	{
 		-- My custom colorscheme based on monokai
-		name = "custom-colorscheme",
-		dir = "/dev/null",
-		dependencies = "sickill/vim-monokai", -- basis colorscheme
+		"sickill/vim-monokai",
 		config = function()
 			vim.cmd.colorscheme("monokai")
 			require("custom-helpers").on_lazy_done(function()
