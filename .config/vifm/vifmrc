@@ -1,0 +1,353 @@
+" vim: ft=vim sw=4 ts=4 et:
+
+" Options
+" -------
+
+set syscalls trash nofollowlinks nosortnumbers vimhelp norunexec
+set history=100 undolevels=128 scrolloff=3
+set vicmd="$EDITOR"
+set timefmt='%Y-%m-%d %H:%M:%S%z'
+set statusline="%A %10u:%-7g %10s %25d"
+set milleroptions=lsize:1,csize:3,rsize:2,rpreview:all
+set nohlsearch incsearch ignorecase smartcase
+set wildmenu wildstyle=popup
+set suggestoptions=normal,visual,view,otherpane,keys,marks,registers
+set grepprg='ag --line-numbers %i %a %s'
+set fusehome="$XDG_RUNTIME_DIR/vifm/fuse"
+
+colorscheme palecore-molokai
+
+" Don't do too many requests to slow file systems:
+if !has('win')
+    set slowfs=curlftpfs
+endif
+
+" Utility commands
+" ----------------
+
+" run (ncdu)
+command! ncdu ncdu %a %f
+
+" quickly set (prec)ision of shown filesize:
+command! prec   :set sizefmt=units:iec,precision:8
+command! noprec :set sizefmt=units:iec
+
+" (rec)ursively list out (files) into a custom view
+command! recfiles
+    \ find %d -type f %u
+
+command! tar
+    \ if [ "%a" ]; then
+        \ tar -cvJf %a'.tar.xz' %f;
+    \ else
+        \ for path in %f; do
+            \ tar -cvJf "$(basename "$path")".tar.xz "$path";
+        \ done;
+    \ fi &
+command! tar!
+    \ if [ "%a" ]; then
+        \ tar -cvJf %a'.tar.xz' %f && rm -rf %f;
+    \ else
+        \ for path in %f; do
+            \ tar -cvJf "$(basename "$path")".tar.xz "$path" && rm -rf "$path";
+        \ done;
+    \ fi &
+
+command! df df -h %m 2> /dev/null
+command! diff
+    \ ! if [ "%c" = "%f" ]
+    \ ; then "$EDITOR" -d %b
+    \ ; else "$EDITOR" -d %f
+    \ ; fi
+command! zip zip -r %f.zip %f
+command! run !! ./%f
+command! make !!make %a
+command! mkcd :mkdir -p %a | cd %a
+command! vgrep vim "+grep %a"
+command! reload :write | restart
+
+" `rmdir` removing empty subdirectories recursively:
+command! rmdir !find %f -depth -type d -exec rmdir {} +
+command! rmemptydir
+    \ find %d -type d -empty -delete &
+command! rmemptyfile
+            \ find %d -type f -empty -delete &
+command! rmtrash
+    \ find %d -type f
+        \ -name desktop.ini
+        \ -o -name Thumbs.db
+        \ -delete &
+
+command! shred
+    \ declare -a dirs=();
+    \ declare -a files=();
+    \ for path in %f; do
+        \ [ -f "$path" ] && files+=("$path") && continue;
+        \ [ -d "$path" ] && dirs+=("$path") && continue;
+    \ done;
+    \ if [ "${files[*]}" ]; then shred -zu "${files[@]}"; fi &
+    \ if [ "${dirs[*]}" ]; then
+        \ chmod -R u+w "${dirs[@]}" &&
+        \ find "${dirs[@]}" ! -type d ! -type f -exec rm {} + &&
+        \ find "${dirs[@]}" -type f -exec shred -zu {} + &&
+        \ find "${dirs[@]}" -depth -type d -exec rmdir {} +;
+    \ fi &
+
+command! chmodfiles
+    \ find %d -type f -perm /a=x  -exec chmod -x {} +
+command! chmoddirs
+    \ find %d -type d -exec chmod 755 {} +
+
+command! older
+  \ !if [ $(($(stat -c%%Y %c) - $(stat -c%%Y %C))) -gt 0 ];
+      \ then touch -r %C %c;
+      \ else touch -r %c %C;
+  \ fi
+" TODO bulkfiy older
+
+command! dups
+    \ :compare bysize listdups %a
+command! dups!
+    \ :compare listdups %a
+command! uniqs
+    \ :compare bysize listunique %a
+command! uniqs!
+    \ :compare listunique %a
+command! diffs
+    \ :compare bysize skipempty showdifferent showuniqueleft showuniqueright %a
+command! diffs!
+    \ :compare skipempty showdifferent showuniqueleft showuniqueright %a
+
+command! rechmod
+    \ find %c -type f -exec chmod 644 {} + -o -type d -exec chmod 755 {} + &
+
+" (C)o(mp)are current files from both panes & tell whether they differ:
+command! cmp
+    \ diff -qsr %b 2>&1 | sed 's/.* //' %S
+" (Vi)sually - as in visual editor - (c)o(mp)are current files
+command! vicmp
+    \ [ "%a" ]          && exec "$EDITOR" -d %a;
+    \ [ "%f" != "%c" ]  && exec "$EDITOR" -d %f;
+    \ true              && exec "$EDITOR" -d %b;
+
+" Key Mappings
+" ------------
+
+" Miscellaneous:
+"
+nnoremap <silent> <C-W>q :q<CR>
+nnoremap <silent> s :sort<CR>
+nnoremap <silent> S :sync<CR>
+nnoremap <silent> B :file &<CR>
+nnoremap <silent> L :file<CR>
+nnoremap <silent> b :bmarks<CR>
+nnoremap <silent> x :shell<CR>
+nnoremap <C-W>q :q<cr>
+nnoremap e :!"$EDITOR" %f<cr>
+vnoremap e :!"$EDITOR" %f<cr>
+nnoremap E :diff<cr>
+vnoremap E :diff<cr>
+" Toggle visibility of preview window:
+nnoremap w :view<cr>
+vnoremap w :view<cr>gv
+
+
+" Views and modals:
+"
+nnoremap <silent> M :set millerview!<CR>
+nnoremap <silent> T :tree!<CR>
+nnoremap <silent> J :jobs<CR>
+
+" Interaction with system clipboard:
+if has('win')
+    " Yank current directory path to Windows clipboard with forward slashes
+    nnoremap yp :!echo %"d:gs!\!/! %i | clip<cr>
+    " Yank path to current file to Windows clipboard with forward slashes
+    nnoremap yf :!echo %"c:gs!\!/! %i | clip<cr>
+elseif executable('xclip')
+    " Yank current directory path into the clipboard
+    nnoremap yd :!echo %d | xclip %i<cr>
+    " Yank current file path into the clipboard
+    nnoremap yf :!echo %c:p | xclip %i<cr>
+elseif executable('xsel')
+    " Yank current directory path into primary and selection clipboards
+    nnoremap yd 
+        \ :!echo -n %d | xsel --input --primary %i 
+        \ && echo -n %d | xsel --clipboard --input %i<cr>
+    " Yank current file path into into primary and selection clipboards
+    nnoremap yf
+        \ :!echo -n %c:p | xsel --input --primary %i
+        \ && echo -n %c:p | xsel --clipboard --input %i<cr>
+endif
+
+" Filetype-specific Options
+" -------------------------
+
+" Pdf
+fileviewer *.pdf pdftotext -nopgbrk %c -
+
+" PostScript
+filextype *.ps,*.eps,*.ps.gz,*.djvu
+    \ {View in zathura} zathura %f,
+
+" Audio
+filetype *.wav,*.mp3,*.flac,*.m4a,*.wma,*.ape,*.ac3,*.og[agx],*.spx,*.opus
+    \ {Play using mpv} mpv --no-audio-display %f,
+    \ {Play using ffplay} ffplay -nodisp -autoexit %c,
+    \ {Play using MPlayer} mplayer %f,
+fileviewer *.mp3,*.opus mp3info
+fileviewer *.flac soxi
+
+" Video
+filextype *.avi,*.mp4,*.wmv,*.dat,*.3gp,*.ogv,*.mkv,*.mpg,*.mpeg,*.vob,
+    \*.fl[icv],*.m2v,*.mov,*.webm,*.ts,*.mts,*.m4v,*.r[am],*.qt,*.divx,
+    \*.as[fx]
+    \ {View using mpv}
+    \ mpv %f,
+    \ {View using ffplay}
+    \ ffplay -fs -autoexit %f,
+    \ {View using Dragon}
+    \ dragon %f:p,
+    \ {View using mplayer}
+    \ mplayer %f,
+fileviewer *.avi,*.mp4,*.wmv,*.dat,*.3gp,*.ogv,*.mkv,*.mpg,*.mpeg,*.vob,
+    \*.fl[icv],*.m2v,*.mov,*.webm,*.ts,*.mts,*.m4v,*.r[am],*.qt,*.divx,
+    \*.as[fx]
+    \ ffprobe -pretty %c 2>&1
+
+" Web
+filextype *.html,*.htm
+    \ {Open with BROWSER} $BROWSER %f > /dev/null 2>&1,
+    \ {Open with surf} surf %f > /dev/null 2>&1
+
+filetype *.html,*.htm links, lynx
+
+" Object
+filetype *.o nm %f | less
+
+" Man page
+filetype *.[1-8] man ./%c
+fileviewer *.[1-8] man ./%c | col -b
+
+filextype *.xcf {Edit in GIMP} gimp %f
+
+" Images
+filextype *.bmp,*.jpg,*.jpeg,*.png,*.gif,*.xpm,*.webp
+    \ {View in sxiv} sxiv %f,
+    \ {View in gpicview} gpicview %c,
+    \ {View in shotwell} shotwell,
+fileviewer *.bmp,*.jpg,*.jpeg,*.png,*.gif,*.xpm
+    \ identify %f
+
+" OpenRaster
+filextype *.ora
+    \ {Edit in MyPaint} mypaint %f,
+
+" Mindmap
+filextype *.vym
+    \ {Open with VYM} vym %f &,
+
+" MD5
+filetype *.md5
+    \ {Check MD5 hash sum} md5sum -c %f %S,
+
+" SHA1
+filetype *.sha1
+    \ {Check SHA1 hash sum} sha1sum -c %f %S,
+
+" SHA256
+filetype *.sha256
+    \ {Check SHA256 hash sum} sha256sum -c %f %S,
+
+" SHA512
+filetype *.sha512
+    \ {Check SHA512 hash sum} sha512sum -c %f %S,
+
+" GPG signature
+filetype *.asc
+    \ {Check signature} !!gpg --verify %c,
+
+" FuseZipMount
+filetype *.zip,*.jar,*.war,*.ear,*.oxt,*.apkg
+    \ {Mount with fuse-zip}
+    \ FUSE_MOUNT|fuse-zip %SOURCE_FILE %DESTINATION_DIR,
+    \ {View contents}
+    \ zip -sf %c | less,
+    \ {Extract here}
+    \ unzip -d %d %c &,
+    \ {Extract there}
+    \ unzip -d %D %c &,
+    \ {Extract into a directory}
+    \ mkdir -p %c:r && unzip -d %c:r %c &,
+fileviewer *.zip,*.jar,*.war,*.ear,*.oxt zip -sf %c
+
+" ArchiveMount
+filetype *.tar,*.tar.bz2,*.tbz2,*.tgz,*.tar.gz,*.tar.xz,*.txz
+    \ {Mount with archivemount}
+    \ FUSE_MOUNT|archivemount %SOURCE_FILE %DESTINATION_DIR,
+    \ {Extract here}
+    \ tar -x -C %d -f %c &,
+    \ {Extract there}
+    \ tar -x -C %D -f %c &,
+    \ {Extract into a directory}
+    \ mkdir -p %c:r && tar -x -C %c:r -f %c &,
+fileviewer *.tgz,*.tar.gz tar -tzf %c
+fileviewer *.tar.bz2,*.tbz2 tar -tjf %c
+fileviewer *.tar.txz,*.txz xz --list %c
+fileviewer *.tar,*.tar.xz tar -tf %c
+
+" Rar2FsMount and rar archives
+filetype *.rar
+    \ {Mount with rar2fs}
+    \ FUSE_MOUNT|rar2fs %SOURCE_FILE %DESTINATION_DIR,
+    \ {Extract here}
+    \ unrar-free e %c &,
+    \ {Extract into a directory}
+    \ mkdir %c:p:r && unrar-free e %c %c:p:r &
+fileviewer *.rar unrar-free l %c
+
+" IsoMount
+filetype *.iso
+    \ {Mount with fuseiso}
+    \ FUSE_MOUNT|fuseiso %SOURCE_FILE %DESTINATION_DIR,
+
+" SshMount
+filetype *.ssh
+    \ {Mount with sshfs}
+    \ FUSE_MOUNT2|sshfs %PARAM %DESTINATION_DIR %FOREGROUND,
+
+" FtpMount
+filetype *.ftp
+    \ {Mount with curlftpfs}
+    \ FUSE_MOUNT2|curlftpfs -o ftp_port=-,,disable_eprt %PARAM %DESTINATION_DIR %FOREGROUND,
+
+" Fuse7z and 7z archives
+filetype *.7z
+    \ {Mount with fuse-7z}
+    \ FUSE_MOUNT|fuse-7z %SOURCE_FILE %DESTINATION_DIR,
+    \ {Mount with fuse-archive}
+    \ FUSE_MOUNT|fuse-archive %SOURCE_FILE %DESTINATION_DIR,
+    \ {Extract here}
+    \ 7z x -o%d %c &,
+    \ {Extract into a directory}
+    \ 7z x -o%c:r %c &,
+fileviewer *.7z 7z l %c
+
+" Office files
+filextype *.odt,*.doc,*.docx,*.xls,*.xlsx,*.odp,*.pptx libreoffice %f &
+fileviewer *.doc catdoc %c
+fileviewer *.docx docx2txt.pl %f -
+
+" TuDu files
+filetype *.tudu tudu -f %c
+
+" Qt projects
+filextype *.pro qtcreator %f &
+
+" Directories
+filextype */
+    \ {View in thunar}
+    \ Thunar %f &,
+    \ {View in NCDU}
+    \ ncdu %f,
+
