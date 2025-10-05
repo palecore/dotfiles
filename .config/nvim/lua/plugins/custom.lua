@@ -68,13 +68,11 @@ return {
 					lualine_z = { "progress", "location" },
 				},
 			})
-		end,
-	},
-	{
-		-- General, miscellaneous lightweight settings
-		name = "custom-general",
-		dir = "/dev/null",
-		config = function()
+
+			-- General, Miscellaneous Lightweight Settings
+			-- -------------------------------------------
+			-- NOTE: These are not lualine-related.
+
 			-- helper functions
 
 			local lazy_fn = require("custom-helpers").lazy_fn
