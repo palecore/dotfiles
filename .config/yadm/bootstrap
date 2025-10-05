@@ -87,6 +87,10 @@ for script_file_path in ~/.config/profile.d/*.sh; do
 done
 SH
 
+prepare_write ~/.config/tmux/tmux.conf << 'TMUX'
+source-file ~/.config/tmux/conf.d/*.conf
+TMUX
+
 if [ "${#FILES_TO_OVERWRITE[@]}" -gt 0 ]; then
 	>&2 echo
 	>&2 echo 'CAUTION: Some files to be bootstrapped already exist in the filesystem!'
