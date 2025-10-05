@@ -21,7 +21,8 @@ return {
 		-- This can work only if local-lua-debugger-vscode is installed.
 		-- For now, only Mason installation is accepted.
 		cond = function()
-			local mason_registry = require("mason-registry")
+			local ok, mason_registry = pcall(require, "mason-registry")
+			if not ok then return false end
 			local debugger_name = "local-lua-debugger-vscode"
 			return mason_registry.has_package(debugger_name)
 		end,
