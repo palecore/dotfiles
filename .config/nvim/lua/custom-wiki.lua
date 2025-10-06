@@ -31,6 +31,7 @@ local function vimwiki_init(wiki_dirs)
 	vim.g.vimwiki_folding = "" -- "expr" is slow
 	vim.g.vimwiki_hl_cb_checked = 2
 	vim.g.vimwiki_hl_headers = 1
+	vim.g.vimwiki_conceallevel = 0
 
 	vim.g.vimwiki_listsyms = " x"
 	vim.g.vimwiki_markdown_link_ext = 1
