@@ -64,11 +64,7 @@ tell_info() {
 # ----
 
 tell_info "Pointing gitignore file to '~/.config/gitignore'..."
-git \
-	--work-tree ~ \
-	--git-dir ~/.local/share/yadm/repo.git \
-	config set --local core.excludesFile '~/.config/gitignore' \
-;
+yadm gitconfig set --local core.excludesFile '~/.config/gitignore'
 tell_info 'Pointed.'
 
 prepare_write ~/.bashrc << 'SH'
