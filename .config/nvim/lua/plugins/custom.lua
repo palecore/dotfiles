@@ -13,19 +13,8 @@ return {
 	},
 	{
 		-- Convenient commenting out of text blocks
-		"preservim/nerdcommenter",
-		keys = {
-			{
-				"<leader>/",
-				"<Plug>NERDCommenterToggle",
-				mode = { "n", "v" },
-				id = "comment_toggle",
-			},
-		},
-		init = function()
-			vim.g.NERDSpaceDelims = 1
-			vim.g.NERDCreateDefaultMappings = 0
-		end,
+		"numToStr/Comment.nvim",
+		opts = {},
 	},
 	{
 		-- My custom colorscheme based on monokai
