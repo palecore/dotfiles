@@ -83,7 +83,7 @@ return {
 			---@type vim.lsp.ClientConfig
 			vim.lsp.config.apex_ls = {
 				cmd = { "/usr/bin/env", "apex-jorje-lsp" },
-				root_markers = "sfdx-project.json",
+				root_markers = { "sfdx-project.json" },
 				filetypes = { "apex" },
 				settings = { apex_enable_semantic_errors = true },
 			}
