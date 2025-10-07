@@ -15,3 +15,7 @@ export SUDO_CMD
 : "${EXPLORER:=vifm}"
 export EXPLORER
 
+# set up a directory for in-development lazy.nvim plugins:
+#
+: "${NVIM_LAZY_DEV_DIR:="$XDG_SRC_HOME"}"
+export NVIM_LAZY_DEV_DIR
