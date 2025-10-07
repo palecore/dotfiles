@@ -18,5 +18,11 @@ if not vim.uv["fs_stat"](lazypath) then
 end
 ---@diagnostic disable-next-line: undefined-field
 vim.opt.rtp:prepend(lazypath)
+-- Prepare options for Lazy:
+-- (NVIM_LAZY_DEV_DIR used as default dev plugins dir if set)
+local lazy_opts = {}
+if vim.env.NVIM_LAZY_DEV_DIR then
+	lazy_opts.dev = { path = vim.env.NVIM_LAZY_DEV_DIR }
+end
 -- Set up Lazy plugins:
-require("lazy").setup("plugins")
+require("lazy").setup("plugins", lazy_opts)
