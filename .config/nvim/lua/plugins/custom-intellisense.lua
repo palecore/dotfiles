@@ -162,6 +162,17 @@ return {
 				},
 			})
 
+			vim.lsp.config("lemminx", {
+				settings = {
+					xml = {
+						server = {
+							-- keep lemminx cache under XDG cache dir:
+							workDir = vim.fs.joinpath(vim.env.XDG_CACHE_HOME, "lemminx"),
+						}
+					}
+				}
+			})
+
 			-- Enable used language server configurations:
 			vim.lsp.enable({
 				"apex_ls",
