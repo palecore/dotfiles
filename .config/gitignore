@@ -3,6 +3,8 @@
 # bashrc - maintained by yadm bootstrap:
 /.bashrc
 /.cache/
+# gh/hosts.yml - contains secrets
+/.config/gh/hosts.yml
 /.config/git/config
 # htoprc - technical & maintained by htop itself
 /.config/htop/htoprc
@@ -15,6 +17,8 @@
 /.config/vifm/scripts/README
 # vifminfo.json - a state file
 /.config/vifm/vifminfo.json
+# wgetrc - maintained by yadm bootstrap
+/.config/wgetrc
 # .profile - maintained by yadm bootstrap
 /.profile
 /.ssh/
