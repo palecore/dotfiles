@@ -89,6 +89,11 @@ prepare_write ~/.config/tmux/tmux.conf << TMUX
 )${tmux_subconfs[@]/#/$'\nsource-file '}
 TMUX
 
+prepare_write ~/.config/wgetrc << WGET
+# CAUTION: This file is fully maintained by yadm bootstrap!
+hsts-file = ${XDG_CACHE_HOME:-$HOME/.cache}/wget-hsts
+WGET
+
 if [ "${#FILES_TO_OVERWRITE[@]}" -gt 0 ]; then
 	>&2 echo
 	>&2 echo 'CAUTION: Some files to be bootstrapped already exist in the filesystem!'
