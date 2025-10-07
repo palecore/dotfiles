@@ -83,8 +83,10 @@ for script_file_path in ~/.config/profile.d/*.sh; do
 done
 SH
 
-prepare_write ~/.config/tmux/tmux.conf << 'TMUX'
-source-file ~/.config/tmux/conf.d/*.conf
+tmux_subconfs=(~/.config/tmux/conf.d/*.conf)
+prepare_write ~/.config/tmux/tmux.conf << TMUX
+# CAUTION: This file is fully maintained by yadm bootstrap!$(:
+)${tmux_subconfs[@]/#/$'\nsource-file '}
 TMUX
 
 if [ "${#FILES_TO_OVERWRITE[@]}" -gt 0 ]; then
