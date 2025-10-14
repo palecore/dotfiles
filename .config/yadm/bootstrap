@@ -63,9 +63,11 @@ tell_info() {
 # main
 # ----
 
-tell_info "Pointing gitignore file to '~/.config/gitignore'..."
-yadm gitconfig set --local core.excludesFile '~/.config/gitignore'
-tell_info 'Pointed.'
+if [ "$(yadm gitconfig get --local core.excludesFile)" != '~/.config/gitignore' ]; then
+	tell_info "Pointing gitignore file to '~/.config/gitignore'..."
+	yadm gitconfig set --local core.excludesFile '~/.config/gitignore'
+	tell_info 'Pointed.'
+fi
 
 prepare_write ~/.bashrc << 'SH'
 for script_file_path in ~/.config/sh.d/*.{,ba}sh; do
