@@ -69,6 +69,12 @@ if [ "$(yadm gitconfig get --local core.excludesFile)" != '~/.config/gitignore' 
 	tell_info 'Pointed.'
 fi
 
+if [ "$(git config get --global init.defaultBranch)" != main ]; then
+	tell_info 'Setting global default init branch to main...'
+	git config set --global init.defaultBranch main
+	tell_info 'Set.'
+fi
+
 prepare_write ~/.bashrc << 'SH'
 for script_file_path in ~/.config/sh.d/*.{,ba}sh; do
 	. "$script_file_path" || {
