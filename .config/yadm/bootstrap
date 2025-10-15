@@ -56,6 +56,16 @@ prepare_write() {
 	FILES_SKIPPED+=("$file_path")
 }
 
+git_config_global_value_set() {
+	local key="${1:?}"
+	local value="${2:?}"
+	if [ "$(git config get --global "$key")" != "$value" ]; then
+		tell_info "Setting git global config '$key' to '$value'..."
+		git config set --global "$key" "$value"
+		tell_info 'Set.'
+	fi
+}
+
 tell_info() {
 	>&2 echo INFO: "$@"
 }
@@ -69,11 +79,8 @@ if [ "$(yadm gitconfig get --local core.excludesFile)" != '~/.config/gitignore' 
 	tell_info 'Pointed.'
 fi
 
-if [ "$(git config get --global init.defaultBranch)" != main ]; then
-	tell_info 'Setting global default init branch to main...'
-	git config set --global init.defaultBranch main
-	tell_info 'Set.'
-fi
+# use main as default init branch:
+git_config_global_value_set init.defaultBranch main
 
 prepare_write ~/.bashrc << 'SH'
 for script_file_path in ~/.config/sh.d/*.{,ba}sh; do
