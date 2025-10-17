@@ -120,6 +120,17 @@ prepare_write ~/.config/tmux/tmux.conf << TMUX
 )${tmux_subconfs[@]/#/$'\nsource-file '}
 TMUX
 
+prepare_write ~/.config/nvim/after/queries/yaml/injections.scm << SCHEME
+; CAUTION: This file is fully maintained by yadm bootstrap!
+; extends
+$(
+	for subconf in ~/.config/nvim/after/queries/yaml/injections.d/*.scm; do
+		[ -r "$subconf" ] || continue
+		cat "$subconf"
+	done
+)
+SCHEME
+
 prepare_write ~/.config/wgetrc << WGET
 # CAUTION: This file is fully maintained by yadm bootstrap!
 hsts-file = ${XDG_CACHE_HOME:-$HOME/.cache}/wget-hsts
