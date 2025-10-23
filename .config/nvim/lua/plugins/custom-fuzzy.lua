@@ -66,14 +66,28 @@ return {
 				end
 				return true
 			end
+			-- set up escape codes for different highlighting in header:
+			local hl = {
+				def = "\27[0m", -- ordinary text
+				map = "\27[38;2;255;235;205m", -- keymap
+				act = "\27[38;2;255;64;64m", -- action description
+			}
+			local function keymap_header_str(keymap, action_description)
+				return hl.def
+					.. "<"
+					.. hl.map
+					.. keymap
+					.. hl.def
+					.. "> to "
+					.. hl.act
+					.. action_description
+					.. hl.def
+			end
 			return fzf_lua.git_branches({
-				headers = {}, -- because we set a custom header below
-				fzf_opts = {
-					["--header"] = ":: " .. table.concat({
-						"<alt-x> to delete",
-						"<alt-X> to force-delete",
-					}, "|"),
-				},
+				header = table.concat({
+					":: " .. keymap_header_str("alt-x", "delete"),
+					keymap_header_str("alt-X", "force-delete"),
+				}, " | "),
 				actions = {
 					["default"] = function(selected, options)
 						if #selected == 0 then
