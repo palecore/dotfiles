@@ -283,6 +283,8 @@ return {
 			vim.keymap.set("n", "grr", "")
 			vim.keymap.del("n", "grr")
 
+			-- Prepare a (L)azy-(R)eload command to reload a plugin:
+			vim.keymap.set("n", "<leader>lr<space>", ":Lazy<space>reload<space>")
 			-- (C)hange (D)irectory to that of current file's:
 			vim.keymap.set("n", "<leader>cd", cd_to_here)
 			-- Open terminal, the e(X)ecution environment:
