@@ -273,7 +273,7 @@ return {
 			-- (G)o to (R)eferences:
 			vim.keymap.set("n", "gr", goto_refs_action)
 			-- Clear unnecessary default `gr...` keybindings
-            -- (overwrite them first):
+			-- (overwrite them first):
 			vim.keymap.set("n", "gri", "")
 			vim.keymap.del("n", "gri")
 			vim.keymap.set("n", "gra", "")
