@@ -42,6 +42,9 @@ return {
 			})
 		end
 
+		local plc_fzf_lua = require("palecore.fzf-lua")
+		local fzf_lua_fts_ext = plc_fzf_lua.filetypes_ext
+
 		local function fzf_lua_custom_git_branches()
 			local function tell_error(msg)
 				vim.notify(msg, vim.log.levels.ERROR)
@@ -140,8 +143,8 @@ return {
 			{ "<leader>fl", id = "fzf_lua_blines", fzf_lua.blines },
 			{ "<leader>f/", id = "fzf_lua_help_tags", fzf_lua.help_tags },
 			{ "<leader>ff", id = "fzf_lua_files", fzf_lua.files },
-			{ "<leader>fF", id = "fzf_lua_filetypes1", fzf_lua.filetypes },
-			{ "<leader>FF", id = "fzf_lua_filetypes2", fzf_lua.filetypes },
+			{ "<leader>fF", id = "fzf_lua_filetypes1", fzf_lua_fts_ext },
+			{ "<leader>FF", id = "fzf_lua_filetypes2", fzf_lua_fts_ext },
 			{ "<leader>fb", id = "fzf_lua_buffers", fzf_lua.buffers },
 			{ "<leader>fc", id = "fzf_lua_commands", fzf_lua.commands },
 			{ "<leader>fa", id = "fzf_lua_grep_project", fzf_lua.grep_project },
