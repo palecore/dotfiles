@@ -3,8 +3,6 @@ return {
 	{
 		"nvim-neotest/neotest",
 		dependencies = {
-			-- Necessary dependencies:
-			"antoinemadec/FixCursorHold.nvim",
 			"nvim-lua/plenary.nvim",
 			"nvim-neotest/nvim-nio",
 			"nvim-treesitter/nvim-treesitter",
