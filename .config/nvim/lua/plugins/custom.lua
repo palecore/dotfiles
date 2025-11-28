@@ -2,6 +2,7 @@
 
 ---@type LazySpec[]
 return {
+	{ "gpanders/editorconfig.nvim" },
 	{ "tpope/vim-eunuch" },
 	{ "tpope/vim-speeddating" },
 	{ "tpope/vim-surround" },
