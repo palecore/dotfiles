@@ -86,6 +86,12 @@ return {
 					.. action_description
 					.. hl.def
 			end
+			local function get_first_word(line)
+				local word = line
+				word = string.sub(word, string.find(word, "%S") or 1, nil)
+				word = string.sub(word, 1, (string.find(word, "%s") or 1) - 1)
+				return word
+			end
 			return fzf_lua.git_branches({
 				header = table.concat({
 					":: " .. keymap_header_str("alt-x", "delete"),
@@ -94,14 +100,14 @@ return {
 				actions = {
 					["default"] = function(selected, options)
 						if #selected == 0 then
-							local new_branch = options.__call_opts.query
+							local new_branch = assert(get_first_word(options.__call_opts.query))
 							if system_or_notify({ "git", "switch", "-c", new_branch }) then
 								tell_info("Created branch " .. new_branch)
 							end
 							return
 						end
 
-						local branch = selected[1]:sub(3)
+						local branch = assert(get_first_word(selected[1]))
 						-- if it's a nonexistent remote branch, cut the remote prefix:
 						if branch:match("^remotes/origin/..*") then branch = branch:sub(16) end
 						if system_or_notify({ "git", "switch", "--", branch }) then
@@ -111,8 +117,7 @@ return {
 					["ctrl-a"] = false, -- by default it seems to create a branch
 					["alt-x"] = {
 						fn = function(selected)
-							if not selected[1] then return end
-							local branch = string.sub(selected[1], 3)
+							local branch = assert(get_first_word(selected[1]))
 							if system_or_notify({ "git", "branch", "-d", branch }) then
 								tell_info("Deleted branch " .. branch)
 							end
@@ -121,8 +126,7 @@ return {
 					},
 					["alt-X"] = {
 						fn = function(selected)
-							if not selected[1] then return end
-							local branch = string.sub(selected[1], 3)
+							local branch = assert(get_first_word(selected[1]))
 							local utils = require("fzf-lua.utils")
 							local confirm = utils.input("Force-delete branch " .. branch .. "? [y/N] ")
 							if confirm ~= "y" then return end
