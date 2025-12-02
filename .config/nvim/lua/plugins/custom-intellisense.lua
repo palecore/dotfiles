@@ -1,3 +1,48 @@
+local function try_async_register_prettier_apex()
+	local self = {}
+	function self.start()
+		local get_apex_prettier_plugin_npm_cmd =
+			{ "npm", "list", "--global", "--parseable", "prettier-plugin-apex" }
+		vim.system(
+			get_apex_prettier_plugin_npm_cmd,
+			{ stderr = false },
+			self.parse_seeking_apex_prettier_plugin
+		)
+	end
+	---@param out vim.SystemCompleted
+	function self.parse_seeking_apex_prettier_plugin(out)
+		local function on_no_plugin() end
+		if out.code ~= 0 then return on_no_plugin() end
+		if not out.stdout then return on_no_plugin() end
+		local stdout_lines = vim.split(out.stdout, "\r?\n", { trimempty = true })
+		if not stdout_lines[1] then return on_no_plugin() end
+		local module_path = stdout_lines[1]
+		local src_path = vim.fs.joinpath(module_path, "dist", "src")
+		local index_paths = vim.fs.find("index.js", { type = "file", path = src_path })
+		if not index_paths[1] then return on_no_plugin() end
+		self.register_prettier(index_paths[1])
+	end
+	function self.register_prettier(apex_prettier_plugin_index_path)
+		local null_ls = require("null-ls")
+		local extra_filetypes = {}
+		local extra_args = {}
+		if apex_prettier_plugin_index_path then
+			extra_filetypes[#extra_filetypes + 1] = "apex"
+			extra_args[#extra_args + 1] = "--plugin=" .. apex_prettier_plugin_index_path
+		end
+		null_ls.deregister("prettier")
+		null_ls.register({
+			null_ls.builtins.formatting.prettier.with({
+				extra_filetypes = extra_filetypes,
+				-- HTML breaks LWC templates (e.g. bracket expressions):
+				disabled_filetypes = { "html" },
+				extra_args = extra_args,
+			}),
+		})
+	end
+	self.start()
+end
+
 ---@type LazySpec[]
 return {
 	{
@@ -28,15 +73,14 @@ return {
 							"--space-redirects",
 						},
 					}),
-					null_ls.builtins.formatting.prettierd.with({
-						extra_filetypes = { "apex" },
+					null_ls.builtins.formatting.prettier.with({
 						-- HTML breaks LWC templates (e.g. bracket expressions):
 						disabled_filetypes = { "html" },
-						extra_args = { "--plugin=prettier-plugin-apex" },
 					}),
 					null_ls.builtins.formatting.stylua,
 				},
 			})
+			try_async_register_prettier_apex()
 		end,
 	},
 	{
