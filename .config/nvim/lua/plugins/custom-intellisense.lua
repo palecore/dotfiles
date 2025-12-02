@@ -118,12 +118,12 @@ return {
 						format = { enable = true },
 						schemas = {
 							{
-								fileMatch = { "sfdx-project.json" },
-								url = "https://raw.githubusercontent.com/forcedotcom/schemas/main/sfdx-project.schema.json",
-							},
-							{
 								fileMatch = { "project-scratch-def.json" },
 								url = "https://raw.githubusercontent.com/forcedotcom/schemas/main/project-scratch-def.schema.json",
+							},
+							{
+								fileMatch = { "sfdx-project.json" },
+								url = "https://raw.githubusercontent.com/forcedotcom/schemas/main/sfdx-project.schema.json",
 							},
 						},
 					},
@@ -168,9 +168,9 @@ return {
 						server = {
 							-- keep lemminx cache under XDG cache dir:
 							workDir = vim.fs.joinpath(vim.env.XDG_CACHE_HOME, "lemminx"),
-						}
-					}
-				}
+						},
+					},
+				},
 			})
 
 			-- Enable used language server configurations:
