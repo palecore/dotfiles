@@ -118,6 +118,10 @@ return {
 						format = { enable = true },
 						schemas = {
 							{
+								fileMatch = { ".prettierrc" },
+								url = "https://www.schemastore.org/prettierrc.json",
+							},
+							{
 								fileMatch = { "project-scratch-def.json" },
 								url = "https://raw.githubusercontent.com/forcedotcom/schemas/main/project-scratch-def.schema.json",
 							},
