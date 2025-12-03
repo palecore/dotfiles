@@ -109,7 +109,7 @@ return {
 
 						local branch = assert(get_first_word(selected[1]))
 						-- if it's a nonexistent remote branch, cut the remote prefix:
-						if branch:match("^remotes/origin/..*") then branch = branch:sub(16) end
+						branch = branch:gsub("^remotes/origin/..*", "", 1)
 						if system_or_notify({ "git", "switch", "--", branch }) then
 							tell_info("Checked out to branch " .. branch)
 						end
