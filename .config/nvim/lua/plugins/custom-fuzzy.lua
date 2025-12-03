@@ -88,7 +88,7 @@ return {
 			end
 			local function get_first_word(line)
 				local word = line
-				word = string.sub(word, string.find(word, "%S") or 1, nil)
+				word = string.gsub(word, "^%s*[+*]?%s*", "", 1)
 				word = string.sub(word, 1, (string.find(word, "%s") or 1) - 1)
 				return word
 			end
