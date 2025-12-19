@@ -100,9 +100,8 @@ return {
 			vim.opt.listchars = { extends = "»", precedes = "…", tab = "¦ ", trail = "…" }
 			-- Other cool glyphs: ·…»¬→˲¦
 			vim.o.wrap = false
-			local default_text_width = 80
-			vim.o.textwidth = default_text_width
-			vim.o.colorcolumn = tostring(default_text_width)
+			vim.opt_global.textwidth = 80
+			vim.opt_global.colorcolumn = { "+1" }
 
 			vim.o.breakat = " {([:,."
 			vim.o.showbreak = "↳·"
@@ -197,17 +196,16 @@ return {
 			local function window_close() vim.api.nvim_buf_delete(0, { force = true }) end
 
 			local function toggle_wrap()
-				local prev_wrap = vim.api.nvim_get_option_value("wrap", {})
-				local curr_wrap = not prev_wrap
-				vim.api.nvim_set_option_value("wrap", curr_wrap, {})
-				if curr_wrap then
-					vim.api.nvim_set_option_value("textwidth", 0, {})
-					vim.api.nvim_set_option_value("colorcolumn", "0", {})
+				local new_wrap = not vim.opt_local.wrap:get()
+				vim.opt_local.wrap = new_wrap
+				if new_wrap then
+					vim.opt_local.textwidth = 0
+					vim.opt_local.colorcolumn = {}
 				else
-					vim.api.nvim_set_option_value("textwidth", nil, {})
-					vim.api.nvim_set_option_value("colorcolumn", nil, {})
+					vim.opt_local.textwidth = nil
+					vim.opt_local.colorcolumn = nil
 				end
-				print(curr_wrap and "wrap" or "nowrap")
+				print(new_wrap and "wrap" or "nowrap")
 			end
 
 			local function run_this_file()
