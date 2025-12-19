@@ -86,13 +86,23 @@ return {
 					.. action_description
 					.. hl.def
 			end
-			local function get_first_word(line)
-				local word = line
-				word = string.gsub(word, "^%s*[+*]?%s*", "", 1)
-				word = string.sub(word, 1, (string.find(word, "%s") or 1) - 1)
-				return word
+			local delimiter = "[*+]?[ \t]+"
+			local function extract_branch_name(line)
+				return vim.split(line, delimiter)[2]
 			end
 			return fzf_lua.git_branches({
+				fzf_opts = {
+					-- complex delimiter is needed to treat branch name as field #2 even
+					-- in cases of checked-out branch, which is prefixed with symbols:
+					["--delimiter"] = delimiter,
+					-- handling ANSI escape sequences is also needed so that delimiter
+					-- works properly:
+					["--ansi"] = true,
+					-- search only by branch name:
+					["--nth"] = "2",
+					-- return only branch name for processing:
+					["--accept-nth"] = "2",
+				},
 				header = table.concat({
 					":: " .. keymap_header_str("alt-x", "delete"),
 					keymap_header_str("alt-X", "force-delete"),
@@ -101,14 +111,14 @@ return {
 				actions = {
 					["default"] = function(selected, options)
 						if #selected == 0 then
-							local new_branch = assert(get_first_word(options.__call_opts.query))
+							local new_branch = assert(options.last_query)
 							if system_or_notify({ "git", "switch", "-c", new_branch }) then
 								tell_info("Created branch " .. new_branch)
 							end
 							return
 						end
 
-						local branch = assert(get_first_word(selected[1]))
+						local branch = assert(selected[1])
 						-- if it's a nonexistent remote branch, cut the remote prefix:
 						branch = branch:gsub("^remotes/origin/..*", "", 1)
 						if system_or_notify({ "git", "switch", "--", branch }) then
@@ -126,8 +136,9 @@ return {
 						reload = true,
 					},
 					["alt-x"] = {
-						fn = function(selected)
-							local branch = assert(get_first_word(selected[1]))
+						fn = function(sel_lines)
+							local sel_line = assert(sel_lines[1], "No selected line received!")
+							local branch = assert(extract_branch_name(sel_line))
 							if system_or_notify({ "git", "branch", "-d", branch }) then
 								tell_info("Deleted branch " .. branch)
 							end
@@ -135,10 +146,12 @@ return {
 						reload = true,
 					},
 					["alt-X"] = {
-						fn = function(selected)
-							local branch = assert(get_first_word(selected[1]))
+						fn = function(sel_lines)
+							local sel_line = assert(sel_lines[1], "No selected line received!")
+							local branch = assert(extract_branch_name(sel_line))
 							local utils = require("fzf-lua.utils")
-							local confirm = utils.input("Force-delete branch " .. branch .. "? [y/N] ")
+							local confirm = utils.input("Force-delete branch " .. branch .. "? [y/N] ", "")
+							confirm = string.lower(confirm or "")
 							if confirm ~= "y" then return end
 							if system_or_notify({ "git", "branch", "-D", branch }) then
 								tell_info("Force-deleted branch " .. branch)
