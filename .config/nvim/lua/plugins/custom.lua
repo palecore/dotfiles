@@ -53,7 +53,7 @@ return {
 				},
 				sections = {
 					lualine_b = { custom_branch, "diff", custom_diagnostics },
-					lualine_x = { "encoding" },
+					lualine_x = { "encoding", require("palecore.gh-copilot").buf_status },
 					lualine_y = { custom_fileformat, "filetype" },
 					lualine_z = { "progress", "location" },
 				},
