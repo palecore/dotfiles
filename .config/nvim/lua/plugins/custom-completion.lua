@@ -4,6 +4,7 @@ return {
 	version = "1.2.0",
 	dependencies = {
 		"moyiz/blink-emoji.nvim", -- for emoji completion
+		"L3MON4D3/LuaSnip", -- for Lua snippets
 	},
 	config = function()
 		require("blink.cmp").setup({ ---@type blink.cmp.Config
@@ -37,7 +38,7 @@ return {
 				ghost_text = { enabled = true },
 			},
 			sources = {
-				default = { "emoji", "lsp", "path", "snippets", "buffer" },
+				default = { "lsp", "path", "snippets", "emoji", "buffer" },
 				providers = {
 					emoji = {
 						module = "blink-emoji",
@@ -48,6 +49,7 @@ return {
 				},
 			},
 			signature = { enabled = true },
+			snippets = { preset = "luasnip" },
 		})
 		-- Highlight kinds of menu items like keywords:
 		require("custom-helpers").on_lazy_done(
