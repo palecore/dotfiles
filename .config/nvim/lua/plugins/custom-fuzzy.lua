@@ -96,6 +96,7 @@ return {
 				header = table.concat({
 					":: " .. keymap_header_str("alt-x", "delete"),
 					keymap_header_str("alt-X", "force-delete"),
+					keymap_header_str("alt-a", "create"),
 				}, " | "),
 				actions = {
 					["default"] = function(selected, options)
@@ -115,6 +116,15 @@ return {
 						end
 					end,
 					["ctrl-a"] = false, -- by default it seems to create a branch
+					["alt-a"] = {
+						fn = function(_, options)
+							local last_query = options.last_query
+							if system_or_notify({ "git", "switch", "-c", last_query }) then
+								tell_info("Created branch " .. last_query)
+							end
+						end,
+						reload = true,
+					},
 					["alt-x"] = {
 						fn = function(selected)
 							local branch = assert(get_first_word(selected[1]))
