@@ -9,6 +9,10 @@ return {
 		"L3MON4D3/LuaSnip",
 		config = function(_, opts)
 			require("luasnip").setup(opts)
+			-- load filetype-specific snippets from snippets/ dir hierarchy:
+			require("luasnip.loaders.from_lua").load({
+				paths = vim.fn.stdpath("config") .. "/lua/snippets",
+			})
 		end,
 	},
 
