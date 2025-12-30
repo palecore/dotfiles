@@ -115,7 +115,7 @@ return {
 			vim.o.foldlevel = 3
 
 			vim.o.backup = false
-			vim.o.backupdir = vim.fn.stdpath("state") .. "/backup"
+			vim.o.backupdir = vim.fs.joinpath(vim.fn.stdpath("state"), "/backup")
 			vim.opt.diffopt = {
 				"vertical",
 				"filler",
