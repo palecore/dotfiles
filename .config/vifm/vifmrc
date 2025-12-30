@@ -68,8 +68,16 @@ command! reload :write | restart
 
 " `rmdir` removing empty subdirectories recursively:
 command! rmdir !find %f -depth -type d -exec rmdir {} +
-command! rmemptydir
-    \ find %d -type d -empty -delete &
+
+command! rmemptydir ! : 'remove empty dirs (here or selected ones)'
+    \ ; : 'if something selected:'
+    \ ; if [ "%f" ]; then : 'remove selected directories'
+        \ ; find %f -type d -empty -delete
+    \ ; else : 'remove here including self'
+        \ ; find %d -type d -empty -delete
+    \ ; fi
+    \ ; &
+
 command! rmemptyfile
             \ find %d -type f -empty -delete &
 command! rmtrash
