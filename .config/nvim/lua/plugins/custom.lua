@@ -97,7 +97,7 @@ return {
 			-- Text Wrapping:
 			-- Show whitespace characters:
 			vim.o.list = true
-			vim.opt.listchars = "extends:»,precedes:…,tab:¦ ,trail:…"
+			vim.opt.listchars = { extends = "»", precedes = "…", tab = "¦ ", trail = "…" }
 			-- Other cool glyphs: ·…»¬→˲¦
 			vim.o.wrap = false
 			local default_text_width = 80
