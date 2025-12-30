@@ -204,8 +204,8 @@ return {
 					vim.api.nvim_set_option_value("textwidth", 0, {})
 					vim.api.nvim_set_option_value("colorcolumn", "0", {})
 				else
-					vim.api.nvim_set_option_value("textwidth", default_text_width, {})
-					vim.api.nvim_set_option_value("colorcolumn", tostring(default_text_width), {})
+					vim.api.nvim_set_option_value("textwidth", nil, {})
+					vim.api.nvim_set_option_value("colorcolumn", nil, {})
 				end
 				print(curr_wrap and "wrap" or "nowrap")
 			end
