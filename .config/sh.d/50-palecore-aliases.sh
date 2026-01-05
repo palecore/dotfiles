@@ -31,7 +31,7 @@ alias t=tmux
 alias ta='tmux attach'
 
 # android termux:
-alias termuxssh='ssh -p 8022 -l "${TERMUX_USER:?}"'
+alias termuxssh='ssh -p 8022 -l ${TERMUX_USER+-l "${TERMUX_USER}"}'
 
 # git:
 alias G=git\ status
