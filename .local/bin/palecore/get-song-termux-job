@@ -1,0 +1,53 @@
+#!/bin/sh
+# shellcheck shell=sh
+set -eu
+
+SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd -P)
+readonly SCRIPT_DIR
+
+### FUNCTIONS
+
+get_song()
+{
+	"${SCRIPT_DIR}/get-song" "$@"
+}
+
+render_logs_in_termux()
+{
+	"${SCRIPT_DIR}/render-logs-in-termux" "$@"
+}
+
+# toast_success MESSAGE
+#
+# Show a success toast notification with the given MESSAGE.
+toast_success()
+(
+	message=$1
+	shift
+	termux-toast -g bottom -c black -b lime "$message"
+)
+
+# toast_error MESSAGE
+#
+# Show an error toast notification with the given MESSAGE.
+toast_error()
+(
+	message=$1
+	shift
+	termux-toast -g bottom -c black -b red "$message"
+)
+
+### ENTRYPOINT
+
+if [ $# -lt 1 ]; then
+	echo "USAGE: $(basename "$0") SONG_URL [EXTRA-ARGS-FOR-GET-SONG]" >&2
+	exit 1
+fi
+
+{
+	if get_song "$@" 2>&1; then
+		toast_success "Song downloaded successfully."
+	else
+		toast_error "Failed to download the song!"
+	fi
+} | render_logs_in_termux "get-song" 5 &
