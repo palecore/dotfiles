@@ -25,3 +25,8 @@
 
 !/.ssh/*.conf
 !/.ssh/ssh_config
+
+# ignore non-dotfile directories - use them for ordinary user data:
+/[!.]*/
+# ~/bin/ is an exception - used by Termux for certain scripts:
+!/bin/
