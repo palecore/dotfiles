@@ -1,0 +1,395 @@
+"""
+Download music files from URLs using yt-dlp.
+"""
+
+import argparse
+import os
+import shlex
+import subprocess
+import sys
+import tempfile
+from collections import deque
+from datetime import datetime
+from pathlib import Path
+from typing import List, Optional
+
+
+class TermuxNotificationLogger:
+    """
+    Logger that renders logs to Android notifications via termux-notification.
+    Keeps a circular buffer of recent messages and all messages for full log view.
+    """
+
+    def __init__(self, prog_name: str, max_recent: int = 5):
+        """
+        Initialize the notification logger.
+
+        Args:
+            prog_name: Program name used as notification ID and title
+            max_recent: Maximum number of recent lines to show in notification
+        """
+        self.prog_name = prog_name
+        self.prog_label = prog_name.replace('-', ' ')
+        self.max_recent = max_recent
+        self.recent_msgs = deque(maxlen=max_recent)
+        self.all_msgs: List[str] = []
+
+    def _escape_shell_arg(self, text: str) -> str:
+        """Escape text for safe shell argument passing."""
+        return shlex.quote(text)
+
+    def _build_show_all_logs_cmd(self) -> str:
+        """Build the command to show all logs in a dialog."""
+        content = '\n'.join(self.all_msgs)
+        cmd_parts = [
+            'termux-dialog', 'confirm', '-t',
+            self._escape_shell_arg(f"{self.prog_label} - All Logs"), '-i',
+            self._escape_shell_arg(content)
+        ]
+        return ' '.join(cmd_parts)
+
+    def _show_notification(self, ongoing: bool = True) -> None:
+        """Show or update the notification with recent messages."""
+        if not self.recent_msgs:
+            return
+
+        content = '\n'.join(self.recent_msgs)
+
+        cmd = [
+            'termux-notification', '--alert-once', '--action',
+            self._build_show_all_logs_cmd(), '--id', self.prog_name, '--title',
+            self.prog_label, '--content', content
+        ]
+
+        if ongoing:
+            cmd.insert(1, '--ongoing')
+
+        try:
+            subprocess.run(cmd, capture_output=True, check=False)
+        except FileNotFoundError:
+            pass
+
+    def log(self, message: str) -> None:
+        """Add a log message and update the notification."""
+        # if the recent_msgs deque is full, remove the oldest message:
+        if len(self.recent_msgs) == self.recent_msgs.maxlen:
+            self.recent_msgs.popleft()
+        self.recent_msgs.append(message)
+        self.all_msgs.append(message)
+        self._show_notification(ongoing=True)
+
+    def finalize(self) -> None:
+        """Show final notification (not ongoing) with all accumulated logs."""
+        if self.all_msgs:
+            self._show_notification(ongoing=False)
+
+
+# Global logger instance
+_logger: Optional[TermuxNotificationLogger] = None
+
+
+def init_logger(prog_name: str = 'get-song', max_recent: int = 5) -> None:
+    """Initialize the global notification logger."""
+    global _logger
+    _logger = TermuxNotificationLogger(prog_name, max_recent)
+
+
+def get_logger() -> Optional[TermuxNotificationLogger]:
+    """Get the global notification logger instance."""
+    return _logger
+
+
+def tell_debug(message: str) -> None:
+    """Print a debug message to stderr."""
+    full_msg = f"DEBUG: {message}"
+    print(full_msg, file=sys.stderr)
+    logger = get_logger()
+    if logger:
+        logger.log(full_msg)
+
+
+def tell_info(message: str) -> None:
+    """Print an info message to stderr."""
+    full_msg = f"INFO: {message}"
+    print(full_msg, file=sys.stderr)
+    logger = get_logger()
+    if logger:
+        logger.log(full_msg)
+
+
+def tell_warn(message: str) -> None:
+    """Print a warning message to stderr."""
+    full_msg = f"WARN: {message}"
+    print(full_msg, file=sys.stderr)
+    logger = get_logger()
+    if logger:
+        logger.log(full_msg)
+
+
+def tell_error(message: str) -> None:
+    """Print an error message to stderr."""
+    full_msg = f"ERROR: {message}"
+    print(full_msg, file=sys.stderr)
+    logger = get_logger()
+    if logger:
+        logger.log(full_msg)
+
+
+def tell_success(message: str) -> None:
+    """Print a success message to stderr and show a Termux success toast."""
+    tell_info(message=message)
+    # send a Termux toast:
+    cmd = [
+        'termux-toast', '-b', 'green', '-c', 'black', '-g', 'bottom', message
+    ]
+    subprocess.run(cmd, capture_output=True, check=False)
+
+
+def tell_failure(message: str) -> None:
+    """Print a failure message to stderr and show a Termux failure toast."""
+    tell_error(message=message)
+    # send a Termux toast:
+    cmd = ['termux-toast', '-b', 'red', '-c', 'black', '-g', 'bottom', message]
+    subprocess.run(cmd, capture_output=True, check=False)
+
+
+def check_dependencies() -> bool:
+    """Check if required dependencies are available."""
+    dependencies = ['yt-dlp']
+    missing = []
+
+    for dep in dependencies:
+        if subprocess.run(['which', dep], capture_output=True).returncode != 0:
+            missing.append(dep)
+
+    if missing:
+        print(f"ERROR: Required utilities missing: {', '.join(missing)}",
+              file=sys.stderr)
+        return False
+    return True
+
+
+def transform_filename(filepath: str) -> str:
+    """
+    Transform filename according to the rules:
+    - Map % to %prcnt
+    - Replace _ with - (whitespace)
+    - Replace -- with _ (double dash)
+    - Make lowercase
+    """
+    new_filepath = filepath
+
+    # Temporarily map replacements to percent-prefixed phrases
+    new_filepath = new_filepath.replace('%', '%prcnt')
+    # For whitespace, yt-dlp uses underscores. Replace them with dashes
+    new_filepath = new_filepath.replace('_', '%whspc')
+    new_filepath = new_filepath.replace('--', '%ddash')
+    # Resolve percent-prefixed phrases
+    new_filepath = new_filepath.replace('%whspc', '-')
+    new_filepath = new_filepath.replace('%ddash', '_')
+    new_filepath = new_filepath.replace('%prcnt', '%')
+    # Make the whole filename lowercase
+    new_filepath = new_filepath.lower()
+
+    return new_filepath
+
+
+def download_song(url: str,
+                  target_dir: Path,
+                  timestamp: Optional[str] = None) -> Optional[Path]:
+    """
+    Download a single song from the given URL.
+
+    Args:
+        url: The URL to download from
+        target_dir: Directory to save the file to
+        timestamp: Optional timestamp prefix for filename
+
+    Returns:
+        Path to the downloaded file if successful, None otherwise
+    """
+    if timestamp is None:
+        timestamp = datetime.now().strftime('%Y%m%d')
+
+    # Create temporary file for filepath output
+    with tempfile.NamedTemporaryFile(mode='w+',
+                                     delete=False,
+                                     prefix='yt-dlp-filepath-') as tmp:
+        filepath_tmpfile = tmp.name
+
+    try:
+        # Construct output template
+        output_template = (
+            f"{timestamp}--%(artist,album_artist,channel|unknown)#S--"
+            f"%(album|unknown)#S--%(track,title|unknown)#S.%(ext)#S")
+
+        tell_info("Downloading the file...")
+
+        # Run yt-dlp
+        cmd = [
+            'yt-dlp', '--no-playlist', '--js-runtimes', 'node',
+            '--audio-format', 'opus', '-x', '--embed-metadata',
+            '--embed-thumbnail', '--embed-subs', '-o', output_template,
+            '--print-to-file', 'after_move:filepath', filepath_tmpfile, '--',
+            url
+        ]
+
+        result = subprocess.run(
+            cmd,
+            cwd=target_dir,
+            capture_output=False,
+            text=True,
+        )
+
+        if result.returncode != 0:
+            return None
+
+        # Read the filepath from temp file
+        with open(filepath_tmpfile, 'r') as f:
+            filepath = f.read().strip()
+
+        if not filepath:
+            tell_error("No filepath returned from yt-dlp!")
+            return None
+
+        # Transform filename
+        new_filepath = transform_filename(filepath)
+
+        if filepath != new_filepath:
+            tell_info("Tweaking the file name...")
+            old_path = target_dir / filepath
+            new_path = target_dir / new_filepath
+
+            if old_path.exists():
+                old_path.rename(new_path)
+                tell_info(f"Renamed '{old_path.name}' to '{new_path.name}'.")
+                filepath = new_filepath
+            else:
+                tell_warn(f"File '{filepath}' not found, skipping rename...")
+
+        # Touch the file to update timestamp
+        final_path = target_dir / filepath
+        if final_path.exists():
+            final_path.touch()
+
+        tell_info("Done.")
+        return final_path
+
+    except Exception as e:
+        tell_error(str(e))
+        return None
+    finally:
+        # Clean up temp file
+        try:
+            os.unlink(filepath_tmpfile)
+        except:
+            tell_warn(f"Deleting temp file '{filepath_tmpfile}' failed.")
+
+
+def main() -> int:
+    """Main entry point."""
+    parser = argparse.ArgumentParser(
+        description='Downloads music files for given URLs using yt-dlp.',
+        formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument(
+        '-d',
+        '--directory',
+        metavar='DIR',
+        default=os.getcwd(),
+        help='Directory to save downloaded files (default: current directory)')
+    parser.add_argument(
+        '-t',
+        '--timestamp',
+        metavar='DATETIME',
+        help=
+        f'Timestamp prefix for filenames (default: {datetime.now().strftime("%Y%m%d")})'
+    )
+    parser.add_argument(
+        '--notification-lines',
+        metavar='N',
+        type=int,
+        default=5,
+        help='Number of recent log lines to show in notification (default: 5)')
+    parser.add_argument('urls',
+                        metavar='URL',
+                        nargs='+',
+                        help='URLs to download from')
+
+    args = parser.parse_args()
+
+    # Initialize the notification logger
+    init_logger(prog_name='get-song', max_recent=args.notification_lines)
+
+    # Check dependencies
+    if not check_dependencies():
+        logger = get_logger()
+        if logger:
+            logger.finalize()
+        return 1
+
+    # Convert target directory to Path and ensure it exists
+    target_dir = Path(args.directory).resolve()
+    if not target_dir.exists():
+        print(f"ERROR: Directory does not exist: {target_dir}",
+              file=sys.stderr)
+        logger = get_logger()
+        if logger:
+            logger.finalize()
+        return 1
+
+    if not target_dir.is_dir():
+        print(f"ERROR: Not a directory: {target_dir}", file=sys.stderr)
+        logger = get_logger()
+        if logger:
+            logger.finalize()
+        return 1
+
+    # Download each URL
+    all_success = True
+    downloaded_files = []
+    for url in args.urls:
+        tell_info(f"Processing URL '{url}'...")
+        downloaded_file = download_song(url, target_dir, args.timestamp)
+        if downloaded_file:
+            downloaded_files.append(downloaded_file)
+        else:
+            all_success = False
+            tell_warn(f"Failed to download '{url}'!")
+
+    # Run termux-media-scan on downloaded files
+    if downloaded_files:
+        tell_info("Scanning files for Android media library...")
+        for file_path in downloaded_files:
+            try:
+                result = subprocess.run(
+                    ['termux-media-scan', '-v',
+                     str(file_path)],
+                    capture_output=True,
+                    text=True)
+                if result.returncode == 0:
+                    tell_info(f"Media scan completed for '{file_path.name}'")
+                else:
+                    tell_warn(f"Media scan failed for '{file_path.name}'")
+            except FileNotFoundError:
+                tell_warn("termux-media-scan not found, skipping media scan")
+                break
+            except Exception as e:
+                tell_warn(f"Media scan error for '{file_path.name}': {e}")
+
+    if all_success:
+        tell_success("Song(s) downloaded successfully.")
+        result_code = 0
+    else:
+        tell_failure("Failed to download some songs!")
+        result_code = 1
+
+    # Finalize the notification (make it non-ongoing)
+    logger = get_logger()
+    if logger:
+        logger.finalize()
+
+    return result_code
+
+
+if __name__ == '__main__':
+    sys.exit(main())
