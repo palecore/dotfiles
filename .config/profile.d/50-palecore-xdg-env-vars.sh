@@ -11,3 +11,5 @@ export XDG_SRC_HOME="$HOME/.local/src"
 export XDG_STATE_HOME="$HOME/.local/state"
 [ -z "${TMPDIR-}" ] || export XDG_RUNTIME_DIR="${TMPDIR-}"
 
+# custom python3 libraries:
+export PYTHONPATH="$XDG_CONFIG_HOME/python3${PYTHONPATH:+:$PYTHONPATH}"
