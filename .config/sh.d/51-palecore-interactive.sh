@@ -11,6 +11,6 @@ KEYTIMEOUT=1
 HISTSIZE=100
 SAVEHIST=100
 # XDG-compliant sh history:
-HISTFILE="${XDG_STATE_HOME:-$HOME/.local/share}/sh_history"
+HISTFILE="$XDG_STATE_HOME/sh_history"
 # no duplicates and irrelevant lines in sh history:
 HISTCONROL=ignoreboth:erasedups
