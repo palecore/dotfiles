@@ -10,12 +10,6 @@ local function trouble_open_refs() require("trouble.api").open({ mode = "lsp_ref
 local function trouble_open_defs()
 	require("trouble.api").open({
 		mode = "lsp_definitions",
-		sections = {
-			"lsp_definitions",
-			"lsp_implementations",
-			"lsp_declarations",
-			"lsp_type_definitions",
-		},
 	})
 end
 
