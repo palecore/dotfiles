@@ -210,12 +210,13 @@ return {
 				},
 			})
 
+			xdg_cache_home = vim.env.XDG_CACHE_HOME or vim.fs.joinpath(vim.env.HOME, ".cache")
 			vim.lsp.config("lemminx", {
 				settings = {
 					xml = {
 						server = {
 							-- keep lemminx cache under XDG cache dir:
-							workDir = vim.fs.joinpath(vim.env.XDG_CACHE_HOME, "lemminx"),
+							workDir = vim.fs.joinpath(xdg_cache_home, "lemminx"),
 						},
 					},
 				},
