@@ -1,4 +1,12 @@
-local function trouble_open_mixed()
+local function trouble_open_mixed_buf()
+	require("trouble.api").open({
+		filter = { buf = 0 },
+		mode = "diagnostics",
+		sections = { "diagnostics", "symbols" },
+	})
+end
+
+local function trouble_open_mixed_all()
 	require("trouble.api").open({
 		mode = "diagnostics",
 		sections = { "diagnostics", "symbols" },
@@ -86,7 +94,30 @@ return {
 	cmd = "Trouble",
 	event = "LspAttach",
 	keys = {
-		{ "<leader>di", trouble_open_mixed, id = "trouble_open_mixed", desc = "Open Trouble View" },
+		{
+			"<leader>di",
+			trouble_open_mixed_buf,
+			id = "trouble_open_mixed_buf",
+			desc = "Open Buffer Trouble View",
+		},
+		{
+			"<leader>dI",
+			trouble_open_mixed_all,
+			id = "trouble_open_mixed_all1",
+			desc = "Open Global Trouble View",
+		},
+		{
+			"<leader>Di",
+			trouble_open_mixed_all,
+			id = "trouble_open_mixed_all2",
+			desc = "Open Global Trouble View",
+		},
+		{
+			"<leader>DI",
+			trouble_open_mixed_all,
+			id = "trouble_open_mixed_all3",
+			desc = "Open Global Trouble View",
+		},
 	},
 	config = function(_, opts)
 		require("trouble").setup(opts)
