@@ -37,3 +37,36 @@ alias termuxssh='ssh -p 8022'
 alias G=git\ status
 alias GL=git\ log\ --oneline\ --graph
 
+# unisync MAIN OTHER
+#
+# Syncs two directories using unison, preferring changes from OTHER.
+unisync()
+(
+	main="${1:?}"
+	other="${2:?}"
+	unison \
+		-batch -perms 0 -times -copyonconflict \
+		-root "$other" \
+		-root "$main" \
+		-prefer "$other" \
+		;
+)
+
+# Unison Helpers
+# --------------
+
+# unisyncd MAIN OTHER
+#
+# Like unisync, but in watch mode - continuously syncs changes as a daemon.
+unisyncd()
+(
+	main="${1:?}"
+	other="${2:?}"
+	unison \
+		-batch -perms 0 -times -copyonconflict \
+		-repeat watch \
+		-root "$other" \
+		-root "$main" \
+		-prefer "$other" \
+		;
+)
