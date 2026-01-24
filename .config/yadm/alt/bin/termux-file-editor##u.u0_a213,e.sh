@@ -31,10 +31,8 @@ trap 'rm "$0"' EXIT # Remove self after execution
 { read -r file_path; read -r music_dir; } << 'EOF'
 SH
 
-# Pass the file path into the script
-printf %s\\n "$file_path" >> "$script_path"
-# Pass the musi dir path into the script
-printf %s\\n "$music_dir" >> "$script_path"
+# Pass the file path and music dir into the script:
+printf %s\\n "$file_path" "$music_dir" >> "$script_path"
 
 cat >> "$script_path" << 'SH'
 EOF
