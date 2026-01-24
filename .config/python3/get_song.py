@@ -10,6 +10,7 @@ import sys
 import tempfile
 from collections import deque
 from datetime import datetime
+from json import JSONDecodeError
 from pathlib import Path
 from typing import List, Optional
 
@@ -153,6 +154,16 @@ def tell_failure(message: str) -> None:
     subprocess.run(cmd, capture_output=True, check=False)
 
 
+def tell_warn_toast(message: str) -> None:
+    """Print a warning message to stderr and show a Termux warning toast."""
+    tell_warn(message=message)
+    # send a Termux toast:
+    cmd = [
+        'termux-toast', '-b', 'orange', '-c', 'black', '-g', 'bottom', message
+    ]
+    subprocess.run(cmd, capture_output=True, check=False)
+
+
 def check_dependencies() -> bool:
     """Check if required dependencies are available."""
     dependencies = ['yt-dlp']
@@ -167,6 +178,141 @@ def check_dependencies() -> bool:
               file=sys.stderr)
         return False
     return True
+
+
+def populate_empty_album_with_title(filepath: Path) -> bool:
+    """
+    Populate empty album metadata field with the title field.
+    Uses a fallback chain: mutagen -> ffmpeg -> warn user.
+
+    Args:
+        filepath: Path to the audio file
+
+    Returns:
+        True if successful or album was already populated, False if failed
+    """
+    # Try mutagen first
+    try:
+        from mutagen import File as MutagenFile  # type: ignore[attr-defined]
+
+        tell_debug("Using mutagen to check and populate album metadata...")
+        audio = MutagenFile(filepath)
+
+        if audio is None:
+            tell_warn(f"Could not read audio file: {filepath.name}")
+            return False
+
+        # Handle different file formats
+        album = None
+        title = None
+
+        # For Opus/Ogg Vorbis files
+        if hasattr(audio, 'tags') and audio.tags:
+            album = audio.tags.get(
+                'album', [None])[0] if 'album' in audio.tags else None
+            title = audio.tags.get(
+                'title', [None])[0] if 'title' in audio.tags else None
+
+            if not album or album.strip() == '':
+                if title and title.strip() != '':
+                    audio.tags['album'] = title
+                    audio.save()
+                    tell_info(f"Populated empty album with title: {title}")
+                    return True
+                else:
+                    tell_debug("Title is also empty, cannot populate album")
+                    return True
+            else:
+                tell_debug(f"Album already populated: {album}")
+                return True
+
+        tell_debug("No tags found in audio file")
+        return True
+
+    except ImportError:
+        tell_debug("mutagen library not available, trying ffmpeg...")
+
+        # Try ffmpeg as fallback
+        if subprocess.run(['which', 'ffmpeg'],
+                          capture_output=True).returncode == 0:
+            tell_debug("Using ffmpeg to check and populate album metadata...")
+
+            # First, probe the file to get current metadata
+            probe_cmd = [
+                'ffprobe', '-v', 'quiet', '-print_format', 'json',
+                '-show_format',
+                str(filepath)
+            ]
+
+            try:
+                probe_result = subprocess.run(probe_cmd,
+                                              capture_output=True,
+                                              text=True,
+                                              check=True)
+
+                import json
+                metadata = json.loads(probe_result.stdout)
+                tags = metadata.get('format', {}).get('tags', {})
+
+                # Handle case-insensitive tag names
+                album = tags.get('album') or tags.get('ALBUM')
+                title = tags.get('title') or tags.get('TITLE')
+
+                if not album or album.strip() == '':
+                    if title and title.strip() != '':
+                        # Use ffmpeg to copy the file with updated metadata
+                        temp_output = filepath.with_suffix(filepath.suffix +
+                                                           '.tmp')
+                        ffmpeg_cmd = [
+                            'ffmpeg', '-i',
+                            str(filepath), '-c', 'copy', '-metadata',
+                            f'album={title}',
+                            str(temp_output), '-y', '-v', 'quiet'
+                        ]
+
+                        result = subprocess.run(ffmpeg_cmd,
+                                                capture_output=True,
+                                                text=True)
+
+                        if result.returncode == 0:
+                            # Replace original file with updated one
+                            temp_output.replace(filepath)
+                            tell_info(
+                                f"Populated empty album with title: {title}")
+                            return True
+                        else:
+                            tell_warn(
+                                f"ffmpeg failed to update metadata: {result.stderr}"
+                            )
+                            if temp_output.exists():
+                                temp_output.unlink()
+                            return False
+                    else:
+                        tell_debug(
+                            "Title is also empty, cannot populate album")
+                        return True
+                else:
+                    tell_debug(f"Album already populated: {album}")
+                    return True
+
+            except subprocess.CalledProcessError as e:
+                tell_warn(f"ffprobe failed: {e}")
+                return False
+            except JSONDecodeError as e:
+                tell_warn(f"Failed to parse ffprobe output: {e}")
+                return False
+            except Exception as e:
+                tell_warn(f"Error using ffmpeg: {e}")
+                return False
+        else:
+            # Neither mutagen nor ffmpeg available
+            msg = "Cannot populate album: neither mutagen library nor ffmpeg utility available"
+            tell_warn_toast(msg)
+            return False
+
+    except Exception as e:
+        tell_warn(f"Error populating album metadata: {e}")
+        return False
 
 
 def transform_filename(filepath: str) -> str:
@@ -196,7 +342,8 @@ def transform_filename(filepath: str) -> str:
 
 def download_song(url: str,
                   target_dir: Path,
-                  timestamp: Optional[str] = None) -> Optional[Path]:
+                  timestamp: Optional[str] = None,
+                  populate_album: bool = False) -> Optional[Path]:
     """
     Download a single song from the given URL.
 
@@ -204,6 +351,7 @@ def download_song(url: str,
         url: The URL to download from
         target_dir: Directory to save the file to
         timestamp: Optional timestamp prefix for filename
+        populate_album: If True, populate empty album metadata with title
 
     Returns:
         Path to the downloaded file if successful, None otherwise
@@ -272,6 +420,11 @@ def download_song(url: str,
         if final_path.exists():
             final_path.touch()
 
+        # Populate empty album with title if requested
+        if populate_album:
+            tell_info("Checking album metadata...")
+            populate_empty_album_with_title(final_path)
+
         tell_info("Done.")
         return final_path
 
@@ -310,6 +463,10 @@ def main() -> int:
         type=int,
         default=5,
         help='Number of recent log lines to show in notification (default: 5)')
+    parser.add_argument(
+        '--populate-empty-album',
+        action='store_true',
+        help='Populate empty album metadata field with the title field')
     parser.add_argument('urls',
                         metavar='URL',
                         nargs='+',
@@ -349,7 +506,8 @@ def main() -> int:
     downloaded_files = []
     for url in args.urls:
         tell_info(f"Processing URL '{url}'...")
-        downloaded_file = download_song(url, target_dir, args.timestamp)
+        downloaded_file = download_song(url, target_dir, args.timestamp,
+                                        args.populate_empty_album)
         if downloaded_file:
             downloaded_files.append(downloaded_file)
         else:
