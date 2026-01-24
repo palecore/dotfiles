@@ -1,5 +1,10 @@
 """
-Download music files from URLs using yt-dlp.
+Download music files from URLs or based on existing audio files using yt-dlp.
+
+This script accepts either URLs or audio file paths as input. If a file path is
+given, it will attempt to extract a source URL from the file's metadata (using
+mutagen or ffmpeg) and use that for downloading. The timestamp for output files
+will be taken from the input file's name if available.
 """
 
 import argparse
@@ -499,10 +504,11 @@ def main() -> int:
         '--populate-empty-album',
         action='store_true',
         help='Populate empty album metadata field with the title field')
-    parser.add_argument('urls',
-                        metavar='URL',
-                        nargs='+',
-                        help='URLs to download from')
+    parser.add_argument(
+        'inputs',
+        metavar='URL-OR-FILE',
+        nargs='+',
+        help='URLs or audio file paths to process/download from')
 
     args = parser.parse_args()
 
@@ -533,18 +539,95 @@ def main() -> int:
             logger.finalize()
         return 1
 
-    # Download each URL
+    # Process each input (URL or file path)
+    import re
+
+    def is_url(s):
+        return re.match(r'^(https?|ftp)://', s)
+
     all_success = True
     downloaded_files = []
-    for url in args.urls:
-        tell_info(f"Processing URL '{url}'...")
-        downloaded_file = download_song(url, target_dir, args.timestamp,
+    for input_item in args.inputs:
+        if is_url(input_item):
+            tell_info(f"Processing URL '{input_item}'...")
+            url = input_item
+            timestamp = args.timestamp
+        else:
+            # Treat as file path
+            file_path = Path(input_item)
+            if not file_path.exists():
+                tell_warn(f"File does not exist: {file_path}")
+                all_success = False
+                continue
+            tell_info(f"Processing file '{file_path}'...")
+            url = None
+            timestamp = None
+            # Try mutagen first
+            try:
+                from mutagen import File as MutagenFile # type: ignore[attr-defined]
+                audio = MutagenFile(file_path)
+                tags = getattr(audio, 'tags', {}) or {}
+                # Try 'purl' or 'comment' tags for URL
+                url = tags.get('purl', [None])[0] if 'purl' in tags else None
+                comment = None
+                if not url:
+                    comment = tags.get(
+                        'comment', [None])[0] if 'comment' in tags else None
+                    if comment and is_url(comment):
+                        url = comment
+                # Try to extract URL from comment if it contains one
+                if not url and comment:
+                    match = re.search(r'(https?://\S+)', comment)
+                    if match:
+                        url = match.group(1)
+                # Use timestamp from filename if possible (YYYYMMDD...)
+                match = re.match(r'^(\d{8})', file_path.name)
+                if match:
+                    timestamp = match.group(1)
+            except ImportError:
+                tell_debug("mutagen not available, trying ffprobe...")
+                # Try ffprobe
+                if is_available('ffprobe'):
+                    probe_cmd = [
+                        'ffprobe', '-v', 'quiet', '-print_format', 'json',
+                        '-show_format',
+                        str(file_path)
+                    ]
+                    try:
+                        probe_result = subprocess.run(probe_cmd,
+                                                      capture_output=True,
+                                                      text=True,
+                                                      check=True)
+                        metadata = json.loads(probe_result.stdout)
+                        tags = metadata.get('format', {}).get('tags', {})
+                        url = tags.get('purl') or None
+                        comment = tags.get('comment') or None
+                        if not url and comment and is_url(comment):
+                            url = comment
+                        if not url and comment:
+                            match = re.search(r'(https?://\S+)', comment)
+                            if match:
+                                url = match.group(1)
+                        match = re.match(r'^(\d{8})', file_path.name)
+                        if match:
+                            timestamp = match.group(1)
+                    except Exception as e:
+                        tell_warn(f"ffprobe failed to extract metadata: {e}")
+                else:
+                    tell_warn(
+                        "Neither mutagen nor ffprobe available to extract metadata."
+                    )
+            if not url:
+                tell_warn(f"No URL found in metadata for file: {file_path}")
+                all_success = False
+                continue
+        downloaded_file = download_song(url, target_dir, timestamp,
                                         args.populate_empty_album)
         if downloaded_file:
             downloaded_files.append(downloaded_file)
         else:
             all_success = False
-            tell_warn(f"Failed to download '{url}'!")
+            tell_warn(f"Failed to download '{input_item}'!")
 
     # Run termux-media-scan on downloaded files
     if downloaded_files:
