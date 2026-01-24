@@ -4,7 +4,7 @@ Download music files from URLs or based on existing audio files using yt-dlp.
 This script accepts either URLs or audio file paths as input. If a file path is
 given, it will attempt to extract a source URL from the file's metadata (using
 mutagen or ffmpeg) and use that for downloading. The timestamp for output files
-will be taken from the input file's name if available.
+will be taken from the input file's name if available unless overridden.
 """
 
 import argparse
@@ -508,7 +508,8 @@ def main() -> int:
         'inputs',
         metavar='URL-OR-FILE',
         nargs='+',
-        help='URLs or audio file paths to process/download from')
+        help=
+        'URLs to download from or audio file paths to get download URLs from')
 
     args = parser.parse_args()
 
@@ -561,10 +562,10 @@ def main() -> int:
                 continue
             tell_info(f"Processing file '{file_path}'...")
             url = None
-            timestamp = None
+            timestamp = args.timestamp  # Use command-line timestamp if provided
             # Try mutagen first
             try:
-                from mutagen import File as MutagenFile # type: ignore[attr-defined]
+                from mutagen import File as MutagenFile  # type: ignore[attr-defined]
                 audio = MutagenFile(file_path)
                 tags = getattr(audio, 'tags', {}) or {}
                 # Try 'purl' or 'comment' tags for URL
@@ -581,9 +582,11 @@ def main() -> int:
                     if match:
                         url = match.group(1)
                 # Use timestamp from filename if possible (YYYYMMDD...)
-                match = re.match(r'^(\d{8})', file_path.name)
-                if match:
-                    timestamp = match.group(1)
+                # but only if no timestamp was provided via command-line
+                if not args.timestamp:
+                    match = re.match(r'^(\d{8})', file_path.name)
+                    if match:
+                        timestamp = match.group(1)
             except ImportError:
                 tell_debug("mutagen not available, trying ffprobe...")
                 # Try ffprobe
@@ -608,9 +611,11 @@ def main() -> int:
                             match = re.search(r'(https?://\S+)', comment)
                             if match:
                                 url = match.group(1)
-                        match = re.match(r'^(\d{8})', file_path.name)
-                        if match:
-                            timestamp = match.group(1)
+                        # Use timestamp from filename if no command-line timestamp
+                        if not args.timestamp:
+                            match = re.match(r'^(\d{8})', file_path.name)
+                            if match:
+                                timestamp = match.group(1)
                     except Exception as e:
                         tell_warn(f"ffprobe failed to extract metadata: {e}")
                 else:
