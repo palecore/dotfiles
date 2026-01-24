@@ -3,16 +3,35 @@ Download music files from URLs using yt-dlp.
 """
 
 import argparse
+import json
 import os
 import shlex
+import shutil
 import subprocess
 import sys
 import tempfile
 from collections import deque
 from datetime import datetime
-from json import JSONDecodeError
 from pathlib import Path
 from typing import List, Optional
+
+
+class UtilityRegistry:
+    """Cache checker for termux command availability."""
+    _cache: dict[str, bool] = {}
+
+    def is_available(self, command: str) -> bool:
+        """Check if a command is available in PATH, with caching."""
+        if command not in self._cache:
+            self._cache[command] = shutil.which(command) is not None
+        return self._cache[command]
+
+
+# global instance of utility registry:
+utility_reg = UtilityRegistry()
+
+# convenience function to separate usage from the class:
+is_available = utility_reg.is_available
 
 
 class TermuxNotificationLogger:
@@ -136,32 +155,47 @@ def tell_error(message: str) -> None:
         logger.log(full_msg)
 
 
+def run_termux_toast(message: str,
+                     background_color: str = 'green',
+                     text_color: str = 'black',
+                     position: str = 'bottom') -> None:
+    """Show a Termux toast notification (if possible)."""
+    if is_available('termux-toast'):
+        cmd = [
+            'termux-toast', '-b', background_color, '-c', text_color, '-g',
+            position, message
+        ]
+        subprocess.run(cmd, capture_output=True, check=False)
+
+
 def tell_success(message: str) -> None:
     """Print a success message to stderr and show a Termux success toast."""
     tell_info(message=message)
     # send a Termux toast:
-    cmd = [
-        'termux-toast', '-b', 'green', '-c', 'black', '-g', 'bottom', message
-    ]
-    subprocess.run(cmd, capture_output=True, check=False)
+    run_termux_toast(message=message,
+                     background_color='green',
+                     text_color='black',
+                     position='bottom')
 
 
 def tell_failure(message: str) -> None:
     """Print a failure message to stderr and show a Termux failure toast."""
     tell_error(message=message)
     # send a Termux toast:
-    cmd = ['termux-toast', '-b', 'red', '-c', 'black', '-g', 'bottom', message]
-    subprocess.run(cmd, capture_output=True, check=False)
+    run_termux_toast(message=message,
+                     background_color='red',
+                     text_color='black',
+                     position='bottom')
 
 
 def tell_warn_toast(message: str) -> None:
     """Print a warning message to stderr and show a Termux warning toast."""
     tell_warn(message=message)
     # send a Termux toast:
-    cmd = [
-        'termux-toast', '-b', 'orange', '-c', 'black', '-g', 'bottom', message
-    ]
-    subprocess.run(cmd, capture_output=True, check=False)
+    run_termux_toast(message=message,
+                     background_color='orange',
+                     text_color='black',
+                     position='bottom')
 
 
 def check_dependencies() -> bool:
@@ -170,7 +204,7 @@ def check_dependencies() -> bool:
     missing = []
 
     for dep in dependencies:
-        if subprocess.run(['which', dep], capture_output=True).returncode != 0:
+        if not is_available(dep):
             missing.append(dep)
 
     if missing:
@@ -233,8 +267,7 @@ def populate_empty_album_with_title(filepath: Path) -> bool:
         tell_debug("mutagen library not available, trying ffmpeg...")
 
         # Try ffmpeg as fallback
-        if subprocess.run(['which', 'ffmpeg'],
-                          capture_output=True).returncode == 0:
+        if is_available('ffmpeg'):
             tell_debug("Using ffmpeg to check and populate album metadata...")
 
             # First, probe the file to get current metadata
@@ -250,7 +283,6 @@ def populate_empty_album_with_title(filepath: Path) -> bool:
                                               text=True,
                                               check=True)
 
-                import json
                 metadata = json.loads(probe_result.stdout)
                 tags = metadata.get('format', {}).get('tags', {})
 
@@ -298,7 +330,7 @@ def populate_empty_album_with_title(filepath: Path) -> bool:
             except subprocess.CalledProcessError as e:
                 tell_warn(f"ffprobe failed: {e}")
                 return False
-            except JSONDecodeError as e:
+            except json.JSONDecodeError as e:
                 tell_warn(f"Failed to parse ffprobe output: {e}")
                 return False
             except Exception as e:
