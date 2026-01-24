@@ -28,15 +28,16 @@ set -eu
 . ~/.profile
 trap 'rm "$0"' EXIT # Remove self after execution
 
-read -r file_path << 'EOF'
+{ read -r file_path; read -r music_dir; } << 'EOF'
 SH
 
 # Pass the file path into the script
 printf %s\\n "$file_path" >> "$script_path"
+# Pass the musi dir path into the script
+printf %s\\n "$music_dir" >> "$script_path"
 
 cat >> "$script_path" << 'SH'
 EOF
-music_dir="$HOME/storage/music/pub/prv/$year"
 python3 -m get_song --populate-empty-album --directory "$music_dir" "$file_path"
 rm -f "$file_path"
 SH
