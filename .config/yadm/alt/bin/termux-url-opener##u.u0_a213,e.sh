@@ -28,7 +28,7 @@ EOF
 curr_year="$(date +%Y)"
 music_dir="$HOME/storage/music/pub/prv/$curr_year"
 mkdir -p "$music_dir"
-python3 -m get_song --directory "$music_dir" "$song_url"
+python3 -m get_song --populate-empty-album --directory "$music_dir" "$song_url"
 SH
 
 chmod +x "$tmp_script_path"
