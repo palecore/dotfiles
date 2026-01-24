@@ -44,4 +44,4 @@ SH
 
 chmod +x "$script_path"
 
-termux-job-scheduler --script "$script_path"
+termux-job-scheduler --battery-not-low false --script "$script_path"
