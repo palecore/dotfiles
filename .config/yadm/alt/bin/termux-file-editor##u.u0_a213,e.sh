@@ -36,7 +36,11 @@ printf %s\\n "$file_path" "$music_dir" >> "$script_path"
 
 cat >> "$script_path" << 'SH'
 EOF
-python3 -m get_song --populate-empty-album --directory "$music_dir" "$file_path"
+# get a song with a URL based on the given file
+# - populate song album tag with song title if empty
+# - if there already exists such song file, use its mtime bumped by 1 second
+#   so that the music player detects it as an update to that song
+python3 -m get_song --populate-empty-album --use-existing-target-file-mtime-shifted 1 --directory "$music_dir" "$file_path"
 rm -f "$file_path"
 SH
 
