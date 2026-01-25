@@ -380,7 +380,8 @@ def transform_filename(filepath: str) -> str:
 def download_song(url: str,
                   target_dir: Path,
                   timestamp: Optional[str] = None,
-                  populate_album: bool = False) -> Optional[Path]:
+                  populate_album: bool = False,
+                  mtime_shift_seconds: Optional[int] = None) -> Optional[Path]:
     """
     Download a single song from the given URL.
 
@@ -389,6 +390,7 @@ def download_song(url: str,
         target_dir: Directory to save the file to
         timestamp: Optional timestamp prefix for filename
         populate_album: If True, populate empty album metadata with title
+        mtime_shift_seconds: If provided and target file exists, shift its mtime by this many seconds
 
     Returns:
         Path to the downloaded file if successful, None otherwise
@@ -440,11 +442,15 @@ def download_song(url: str,
         # Transform filename
         new_filepath = transform_filename(filepath)
 
+        prev_stat_info = None
         if filepath != new_filepath:
             tell_info("Tweaking the file name...")
             old_path = target_dir / filepath
             new_path = target_dir / new_filepath
 
+            # get stat info of the previous target file if it exists:
+            if new_path.exists():
+                prev_stat_info = new_path.stat()
             if old_path.exists():
                 old_path.rename(new_path)
                 tell_info(f"Renamed '{old_path.name}' to '{new_path.name}'.")
@@ -461,6 +467,17 @@ def download_song(url: str,
         if populate_album:
             tell_info("Checking album metadata...")
             populate_empty_album_with_title(final_path)
+
+        # Apply mtime shifting if requested
+        if mtime_shift_seconds is not None and prev_stat_info is not None:
+            try:
+                original_mtime = prev_stat_info.st_mtime
+                shifted_mtime = original_mtime + mtime_shift_seconds
+                os.utime(final_path, (shifted_mtime, shifted_mtime))
+                tell_debug(
+                    f"Applied mtime shift of {mtime_shift_seconds}s to '{final_path.name}'")
+            except Exception as e:
+                tell_warn(f"Failed to apply mtime shift: {e}")
 
         tell_info("Done.")
         return final_path
@@ -504,6 +521,11 @@ def main() -> int:
         '--populate-empty-album',
         action='store_true',
         help='Populate empty album metadata field with the title field')
+    parser.add_argument(
+        '--use-existing-target-file-mtime-shifted',
+        metavar='SECONDS',
+        type=int,
+        help='If target file exists, shift its mtime by SECONDS and apply to the downloaded file')
     parser.add_argument(
         'inputs',
         metavar='URL-OR-FILE',
@@ -627,7 +649,8 @@ def main() -> int:
                 all_success = False
                 continue
         downloaded_file = download_song(url, target_dir, timestamp,
-                                        args.populate_empty_album)
+                                        args.populate_empty_album,
+                                        args.use_existing_target_file_mtime_shifted)
         if downloaded_file:
             downloaded_files.append(downloaded_file)
         else:
