@@ -61,12 +61,14 @@ return {
 			{ "<leader>ac", ":CodeCompanionCmd<space>", id = "ai_cmd" },
 		},
 		dependencies = {
+			"franco-ruggeri/codecompanion-spinner.nvim",
 			"nvim-lua/plenary.nvim",
 			"nvim-treesitter/nvim-treesitter",
 			"ravitemer/codecompanion-history.nvim", -- session management
 		},
 		opts = {
 			extensions = {
+				spinner = {},
 				history = {
 					enabled = true,
 					keymap = "gh",
