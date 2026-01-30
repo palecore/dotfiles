@@ -40,8 +40,8 @@ return {
 				end
 
 				-- Set up keybindings:
-				vim.keymap.set("n", "[c", gs_next_change, opts)
-				vim.keymap.set("n", "]c", gs_prev_change, opts)
+				vim.keymap.set("n", "[c", gs_next_change, { buffer = bufnr, expr = true })
+				vim.keymap.set("n", "]c", gs_prev_change, { buffer = bufnr, expr = true })
 				vim.keymap.set("n", "<leader>hi", gs.preview_hunk, opts)
 				vim.keymap.set("n", "<leader>ho", gs.reset_hunk, opts)
 				vim.keymap.set("v", "<leader>ho", gs_reset_hunk_range, opts)
