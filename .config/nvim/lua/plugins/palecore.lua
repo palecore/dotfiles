@@ -51,4 +51,31 @@ return {
 			{ "<c-n>", "<Plug>(copilot-next)", mode = "i", id = "copilot_next" },
 		},
 	},
+	{
+		"olimorris/codecompanion.nvim",
+		version = "^18.0.0",
+		cmd = { "CodeCompanion", "CodeCompanionChat" },
+		keys = {
+			{ "<leader>aa", "<cmd>CodeCompanionChat<cr>", id = "ai_chat" },
+			{ "<leader>ai", ":CodeCompanion<space>", id = "ai_inline" },
+			{ "<leader>ac", ":CodeCompanionCmd<space>", id = "ai_cmd" },
+		},
+		dependencies = {
+			"nvim-lua/plenary.nvim",
+			"nvim-treesitter/nvim-treesitter",
+			"ravitemer/codecompanion-history.nvim", -- session management
+		},
+		opts = {
+			extensions = {
+				history = {
+					enabled = true,
+					keymap = "gh",
+					save_chat_keymap = "sc",
+					auto_save = false,
+					expiration_days = 30, -- clean up archived chat after a month
+					dir_to_save = vim.fn.stdpath("data") .. "/codecompanion-history",
+				},
+			},
+		},
+	},
 }
