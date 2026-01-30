@@ -67,15 +67,24 @@ return {
 			"ravitemer/codecompanion-history.nvim", -- session management
 		},
 		opts = {
+			-- [!TIP] to open in the current buffer:
+			-- display = { chat = { window = { layout = "buffer" } } },
 			extensions = {
 				spinner = {},
 				history = {
 					enabled = true,
+					continue_last_chat = true,
+					delete_on_clearing_chat = true,
 					keymap = "gh",
 					save_chat_keymap = "sc",
 					auto_save = false,
 					expiration_days = 30, -- clean up archived chat after a month
 					dir_to_save = vim.fn.stdpath("data") .. "/codecompanion-history",
+					title_generation_opts = {
+						-- use lightweight model to avoid exhausting premium interactions:
+						adapter = "copilot",
+						model = "gpt-4o",
+					},
 				},
 			},
 		},
