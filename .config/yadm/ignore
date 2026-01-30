@@ -5,7 +5,6 @@
 /.cache/
 # gh/hosts.yml - contains secrets
 /.config/gh/hosts.yml
-/.config/git/config
 # htoprc - technical & maintained by htop itself
 /.config/htop/htoprc
 /.config/nvim/lazy-lock.json
