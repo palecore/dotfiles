@@ -9,6 +9,31 @@ return {
 		opts = {},
 	},
 	{
+		"jbyuki/one-small-step-for-vimkind",
+		dependencies = "mfussenegger/nvim-dap",
+		ft = "lua",
+		cmd = "OsvLaunch",
+		config = function()
+			local dap = require("dap")
+			dap.configurations.lua = dap.configurations.lua or {}
+			local lua_dap_configs = dap.configurations.lua
+			lua_dap_configs[#lua_dap_configs + 1] = {
+				type = "osvlua",
+				request = "attach",
+				name = "Attach to running Neovim instance",
+			}
+			dap.adapters.osvlua = function(callback, config)
+				callback({ type = "server", host = config.host or "127.0.0.1", port = config.port or 8086 })
+			end
+
+			vim.api.nvim_create_user_command(
+				"OsvLaunch",
+				function() require("osv").launch({ port = 8086 }) end,
+				{ force = true }
+			)
+		end,
+	},
+	{
 		name = "custom-debugger-lua",
 		dir = "/dev/null",
 		dependencies = {
