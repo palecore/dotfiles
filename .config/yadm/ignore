@@ -3,10 +3,18 @@
 # bashrc - maintained by yadm bootstrap:
 /.bashrc
 /.cache/
+# .copilot/config.json - contains secrets
+/.config/.copilot/config.json
+# just logs
+/.config/.copilot/logs/
 # gh/hosts.yml - contains secrets
 /.config/gh/hosts.yml
+# github-copilot/apps.json - contains secrets
+/.config/github-copilot/apps.json
+/.config/google-chrome-for-testing/Crash Reports/
 # htoprc - technical & maintained by htop itself
 /.config/htop/htoprc
+/.config/microsoft-edge/Crash Reports/
 /.config/nvim/lazy-lock.json
 # tmux.conf - maintained by yadm bootstrap
 /.config/tmux/tmux.conf
