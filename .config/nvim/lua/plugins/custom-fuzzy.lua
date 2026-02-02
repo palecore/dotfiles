@@ -86,9 +86,24 @@ return {
 					.. action_description
 					.. hl.def
 			end
+			-- NOTE: delimiter has to be both a valid Lua pattern and AWK regex
 			local delimiter = "[*+]?[ \t]+"
-			local function extract_branch_name(line)
-				return vim.split(line, delimiter)[2]
+			local function extract_branch_name(line) return vim.split(line, delimiter)[2] end
+			local function create_branch_action(selecteds, options)
+				if #selecteds == 0 then
+					local new_branch = assert(options.last_query)
+					if system_or_notify({ "git", "switch", "-c", new_branch }) then
+						tell_info("Created branch " .. new_branch)
+					end
+				else
+					local selected = selecteds[1]
+					local branch = extract_branch_name(selected)
+					-- if it's a nonexistent remote branch, cut the remote prefix:
+					branch = branch:gsub("^remotes/origin/", "", 1)
+					if system_or_notify({ "git", "switch", "--", branch }) then
+						tell_info("Checked out to branch " .. branch)
+					end
+				end
 			end
 			return fzf_lua.git_branches({
 				fzf_opts = {
@@ -109,32 +124,9 @@ return {
 					keymap_header_str("alt-a", "create"),
 				}, " | "),
 				actions = {
-					["default"] = function(selected, options)
-						if #selected == 0 then
-							local new_branch = assert(options.last_query)
-							if system_or_notify({ "git", "switch", "-c", new_branch }) then
-								tell_info("Created branch " .. new_branch)
-							end
-							return
-						end
-
-						local branch = assert(selected[1])
-						-- if it's a nonexistent remote branch, cut the remote prefix:
-						branch = branch:gsub("^remotes/origin/..*", "", 1)
-						if system_or_notify({ "git", "switch", "--", branch }) then
-							tell_info("Checked out to branch " .. branch)
-						end
-					end,
+					["default"] = create_branch_action,
 					["ctrl-a"] = false, -- by default it seems to create a branch
-					["alt-a"] = {
-						fn = function(_, options)
-							local last_query = options.last_query
-							if system_or_notify({ "git", "switch", "-c", last_query }) then
-								tell_info("Created branch " .. last_query)
-							end
-						end,
-						reload = true,
-					},
+					["alt-a"] = { fn = create_branch_action, reload = true },
 					["alt-x"] = {
 						fn = function(sel_lines)
 							local sel_line = assert(sel_lines[1], "No selected line received!")
