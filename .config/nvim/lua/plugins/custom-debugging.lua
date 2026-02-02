@@ -77,12 +77,15 @@ return {
 	},
 	{
 		"mfussenegger/nvim-dap",
+		dependencies = {
+			"igorlfs/nvim-dap-view", -- for semi-advanced UI
+		},
 		--- @type fun(): LazyKeys[]
 		keys = function()
-			local lazy_require = require("custom-helpers").lazy_require
-			--
-			local dap = lazy_require("dap")
-			local dap_toggle_bp = dap.toggle_breakpoint
+			-- helpers:
+			local function dap() return require("dap") end
+			local function widgets() return require("dap.ui.widgets") end
+			-- complex wrappers:
 			local function dap_put_cond_bp()
 				---@type string|nil
 				local cond = vim.fn.input("Condition: ")
@@ -90,26 +93,56 @@ return {
 				-- ensure "minimum hits" are a stringified number:
 				local hits_num = tonumber(vim.fn.input("Minimum Hits (-): "))
 				local hits_str = hits_num and "" .. hits_num
-				dap.set_breakpoint(cond, "" .. hits_str)
+				dap().set_breakpoint(cond, "" .. hits_str)
 			end
-			local function dap_open_repl_here()
-				local buf, win = require("dap").repl.open()
-				vim.api.nvim_set_current_buf(buf)
-				vim.api.nvim_win_close(win, true)
+			--
+			local function dap_toggle_frames()
+				local view = widgets().sidebar(widgets().frames)
+				view.toggle({ width = 40 })
 			end
+			-- vim commands:
+			local dap_open_eval = "<cmd>DapEval<cr>"
+			local dap_toggle_view = "<cmd>DapViewToggle<cr>"
+			-- simple wrappers:
+			local function dap_clear_breakpoints() dap().clear_breakpoints() end
+			local function dap_continue() dap().continue() end
+			local function dap_step_back() dap().step_back() end
+			local function dap_step_into() dap().step_into() end
+			local function dap_step_out() dap().step_out() end
+			local function dap_step_over() dap().step_over() end
+			local function dap_terminate() dap().terminate() end
+			local function dap_toggle_bp() dap().toggle_breakpoint() end
 			return {
+				-- de: open eval
+				{ "<leader>de", dap_open_eval, desc = "open DAP REPL in current window" },
+				-- df: open frames
+				{ "<leader>df", dap_toggle_frames, desc = "DAP: open frames widget" },
+				-- dh: step back
+				{ "<leader>dh", dap_step_back, desc = "DAP: step back" },
+				-- dj: step over
+				{ "<leader>dj", dap_step_over, desc = "DAP: step over" },
+				-- DJ: run/continue
+				{ "<leader>dJ", dap_continue, desc = "DAP: continue (or run)" },
+				{ "<leader>DJ", dap_continue, desc = "DAP: continue (or run)" },
+				-- dl: step into
+				{ "<leader>dl", dap_step_into, desc = "DAP: step into" },
+				-- DL: step out
+				{ "<leader>dL", dap_step_out, desc = "DAP: step out" },
+				{ "<leader>Dl", dap_step_out, desc = "DAP: step out" },
+				{ "<leader>DL", dap_step_out, desc = "DAP: step out" },
+				-- dp: toggle breakpoint
 				{ "<leader>dp", dap_toggle_bp, desc = "DAP: toggle breakpoint" },
-				{ "<leader>dj", dap.step_over, desc = "DAP: step over" },
-				{ "<leader>dJ", dap.continue, desc = "DAP: continue (or run)" },
-				{ "<leader>DJ", dap.continue, desc = "DAP: continue (or run)" },
-				{ "<leader>dl", dap.step_into, desc = "DAP: step into" },
-				{ "<leader>dL", dap.list_breakpoints, desc = "list DAP breakpoints" },
-				{ "<leader>DL", dap.list_breakpoints, desc = "list DAP breakpoints" },
-				{ "<leader>dh", dap.step_back, desc = "DAP: step back" },
-				{ "<leader>dq", dap.clear_breakpoints, desc = "clear DAP breakpoints" },
+				-- DP: toggle conditional breakpoint
 				{ "<leader>dP", dap_put_cond_bp, desc = "DAP: put conditional breakpoint" },
 				{ "<leader>DP", dap_put_cond_bp, desc = "DAP: put conditional breakpoint" },
-				{ "<leader>de", dap_open_repl_here, desc = "open DAP REPL in current window" },
+				-- dq: clear breakpoints
+				{ "<leader>dq", dap_clear_breakpoints, desc = "clear DAP breakpoints" },
+				-- DQ: terminate session
+				{ "<leader>dQ", dap_terminate, desc = "DAP: terminate session" },
+				{ "<leader>Dq", dap_terminate, desc = "DAP: terminate session" },
+				{ "<leader>DQ", dap_terminate, desc = "DAP: terminate session" },
+				-- dv: toggle DAP view
+				{ "<leader>dt", dap_toggle_view, desc = "DAP: toggle DAP view" },
 			}
 		end,
 	},
