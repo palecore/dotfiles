@@ -53,29 +53,29 @@ return {
 		end,
 		config = function()
 			local dap = require("dap")
-			dap.configurations.lua = {
-				{
-					name = "Current file (local-lua-dbg, lua)",
-					type = "local-lua",
-					request = "launch",
-					cwd = "${workspaceFolder}",
-					program = {
-						lua = "lua5.1",
-						file = "${file}",
-					},
-					args = {},
+			dap.configurations.lua = dap.configurations.lua or {}
+			local lua_dap_configs = dap.configurations.lua
+			lua_dap_configs[#lua_dap_configs + 1] = {
+				name = "Current file (local-lua-dbg, lua)",
+				type = "local-lua",
+				request = "launch",
+				cwd = "${workspaceFolder}",
+				program = {
+					lua = "lua5.1",
+					file = "${file}",
 				},
-				{
-					name = "Current file (local-lua-dbg, nlua)",
-					type = "local-lua",
-					request = "launch",
-					cwd = "${workspaceFolder}",
-					program = {
-						lua = "nlua",
-						file = "${file}",
-					},
-					args = {},
+				args = {},
+			}
+			lua_dap_configs[#lua_dap_configs] = {
+				name = "Current file (local-lua-dbg, nlua)",
+				type = "local-lua",
+				request = "launch",
+				cwd = "${workspaceFolder}",
+				program = {
+					lua = "nlua",
+					file = "${file}",
 				},
+				args = {},
 			}
 
 			local debugger_mason_install_dir = vim.fn.stdpath("data")
