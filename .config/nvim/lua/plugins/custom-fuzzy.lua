@@ -46,11 +46,9 @@ return {
 		local fzf_lua_fts_ext = plc_fzf_lua.filetypes_ext
 
 		local function fzf_lua_custom_git_branches()
-			local function tell_error(msg)
-				vim.notify(msg, vim.log.levels.ERROR)
-				pcall(function() error(msg) end)
-			end
-			local function tell_info(msg) vim.notify(msg) end
+			local utils = require("fzf-lua.utils")
+			local function tell_error(msg) utils.notify(vim.log.levels.ERROR, msg) end
+			local function tell_info(msg) utils.notify(vim.log.levels.INFO, msg) end
 			local function system_or_notify(_cmd)
 				local output = ""
 				local proc = vim
@@ -133,13 +131,13 @@ return {
 							if system_or_notify({ "git", "branch", "-d", branch }) then
 								tell_info("Deleted branch " .. branch)
 							else
-								local utils = require("fzf-lua.utils")
-								local confirm = utils.input(
-									"Normal delete failed. Force-delete branch " .. branch .. "? [y/N] ",
-									""
-								) or ""
-								confirm = string.lower(confirm)
-								if confirm ~= "y" then return end
+								local should_delete = utils.confirm(
+									"Delete failed. Force-delete branch " .. branch .. "?",
+									"Yes\nNo",
+									2,
+									"W"
+								) == 1
+								if not should_delete then return end
 								if system_or_notify({ "git", "branch", "-D", branch }) then
 									tell_info("Force-deleted branch " .. branch)
 								end
