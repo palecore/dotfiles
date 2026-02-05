@@ -157,6 +157,7 @@ return {
 
 		return {
 			{ "<leader>f<space>", id = "fzf_lua_resume", fzf_lua.resume },
+			{ "<leader>fw", id = "fzf_lua_git_worktrees", fzf_lua.git_worktrees },
 			{ "<leader>ft", id = "fzf_lua_tags", fzf_lua.tags },
 			{ "<leader>fh", id = "fzf_lua_oldfiles", fzf_lua.oldfiles },
 			{ "<leader>fl", id = "fzf_lua_blines", fzf_lua.blines },
