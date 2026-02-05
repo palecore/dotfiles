@@ -119,34 +119,30 @@ return {
 					["--accept-nth"] = "2",
 				},
 				header = table.concat({
-					":: " .. keymap_header_str("alt-x", "delete"),
-					keymap_header_str("alt-X", "force-delete"),
-					keymap_header_str("alt-a", "create"),
+					":: " .. keymap_header_str("ctrl-x", "delete"),
+					keymap_header_str("ctrl-r", "create"),
 				}, " | "),
 				actions = {
 					["default"] = create_branch_action,
 					["ctrl-a"] = false, -- by default it seems to create a branch
-					["alt-a"] = { fn = create_branch_action, reload = true },
-					["alt-x"] = {
+					["ctrl-r"] = { fn = create_branch_action, reload = true },
+					["ctrl-x"] = {
 						fn = function(sel_lines)
 							local sel_line = assert(sel_lines[1], "No selected line received!")
 							local branch = assert(extract_branch_name(sel_line))
 							if system_or_notify({ "git", "branch", "-d", branch }) then
 								tell_info("Deleted branch " .. branch)
-							end
-						end,
-						reload = true,
-					},
-					["alt-X"] = {
-						fn = function(sel_lines)
-							local sel_line = assert(sel_lines[1], "No selected line received!")
-							local branch = assert(extract_branch_name(sel_line))
-							local utils = require("fzf-lua.utils")
-							local confirm = utils.input("Force-delete branch " .. branch .. "? [y/N] ", "")
-							confirm = string.lower(confirm or "")
-							if confirm ~= "y" then return end
-							if system_or_notify({ "git", "branch", "-D", branch }) then
-								tell_info("Force-deleted branch " .. branch)
+							else
+								local utils = require("fzf-lua.utils")
+								local confirm = utils.input(
+									"Normal delete failed. Force-delete branch " .. branch .. "? [y/N] ",
+									""
+								) or ""
+								confirm = string.lower(confirm)
+								if confirm ~= "y" then return end
+								if system_or_notify({ "git", "branch", "-D", branch }) then
+									tell_info("Force-deleted branch " .. branch)
+								end
 							end
 						end,
 						reload = true,
