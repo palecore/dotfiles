@@ -26,3 +26,5 @@
 	cmd = nvim -d \"$LOCAL\" \"$REMOTE\" \"$BASE\" \"$MERGED\"
 [includeIf "gitdir:~/.local/share/yadm/repo.git"]
     path = ~/.config/yadm/config
+[rebase]
+	autoStash = true
