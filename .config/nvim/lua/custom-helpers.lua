@@ -58,7 +58,7 @@ end
 function M.lazy_require(modname)
 	return setmetatable({}, {
 		__index = function(_, k)
-			return function(...) require(modname)[k](...) end
+			return function(...) return require(modname)[k](...) end
 		end,
 	})
 end
