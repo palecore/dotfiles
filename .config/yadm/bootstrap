@@ -56,41 +56,12 @@ prepare_write() {
 	FILES_SKIPPED+=("$file_path")
 }
 
-git_config_global_value_set() {
-	local key="${1:?}"
-	local value="${2:?}"
-	if [ "$(git config get --global "$key")" != "$value" ]; then
-		tell_info "Setting git global config '$key' to '$value'..."
-		git config set --global "$key" "$value"
-		tell_info 'Set.'
-	fi
-}
-
-git_config_global_value_unset() {
-	local key="${1:?}"
-	if [ -n "$(git config get --global "$key")" ]; then
-		tell_info "Unsetting git global config '$key'..."
-		git config unset --global "$key"
-		tell_info 'Unset.'
-	fi
-}
-
 tell_info() {
 	>&2 echo INFO: "$@"
 }
 
 # main
 # ----
-
-# use main as default init branch:
-git_config_global_value_set init.defaultBranch main
-# use --oneline as default git log format:
-git_config_global_value_set format.pretty oneline
-git_config_global_value_set log.abbrevCommit true
-# require explicitly setting user name & email for each git project:
-git_config_global_value_set user.useConfigOnly true
-git_config_global_value_unset user.name
-git_config_global_value_unset user.email
 
 prepare_write ~/.bashrc << 'SH'
 for script_file_path in ~/.config/sh.d/*.{,ba}sh; do
