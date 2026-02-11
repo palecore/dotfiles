@@ -28,9 +28,11 @@ return {
 	end,
 	---@type fun(): LazyKeys[]
 	keys = function()
-		local fzf_lua = require("custom-helpers").lazy_require("fzf-lua")
+		local lazy_require = require("custom-helpers").lazy_require
+		local fzf_lua = lazy_require("fzf-lua")
+		local utils = lazy_require("fzf-lua.utils")
 
-		local fzf_lua_grep_git_files = function()
+		local function fzf_lua_grep_git_files()
 			return fzf_lua.grep_project({
 				fzf_opts = { ["--ansi"] = true },
 				cmd = "git grep --line-number --column --color=always",
@@ -45,45 +47,46 @@ return {
 		local plc_fzf_lua = require("palecore.fzf-lua")
 		local fzf_lua_fts_ext = plc_fzf_lua.filetypes_ext
 
+		-- set up escape codes for different highlighting in header:
+		local hl = {
+			def = "\27[0m", -- ordinary text
+			map = "\27[38;2;255;235;205m", -- keymap
+			act = "\27[38;2;255;64;64m", -- action description
+		}
+		local function keymap_header_str(keymap, action_description)
+			return hl.def
+				.. "<"
+				.. hl.map
+				.. keymap
+				.. hl.def
+				.. "> to "
+				.. hl.act
+				.. action_description
+				.. hl.def
+		end
+
+		local function tell_error(msg) utils.notify(vim.log.levels.ERROR, msg) end
+		local function tell_info(msg) utils.notify(vim.log.levels.INFO, msg) end
+		local function system_or_notify(_cmd)
+			local output = ""
+			local proc = vim
+				.system(_cmd, {
+					stdout = function(err, data)
+						if not err and data then output = output .. data end
+					end,
+					stderr = function(err, data)
+						if not err and data then output = output .. data end
+					end,
+				})
+				:wait()
+			if proc.code ~= 0 then
+				tell_error(_cmd[1] .. ": " .. output)
+				return false
+			end
+			return true
+		end
+
 		local function fzf_lua_custom_git_branches()
-			local utils = require("fzf-lua.utils")
-			local function tell_error(msg) utils.notify(vim.log.levels.ERROR, msg) end
-			local function tell_info(msg) utils.notify(vim.log.levels.INFO, msg) end
-			local function system_or_notify(_cmd)
-				local output = ""
-				local proc = vim
-					.system(_cmd, {
-						stdout = function(err, data)
-							if not err and data then output = output .. data end
-						end,
-						stderr = function(err, data)
-							if not err and data then output = output .. data end
-						end,
-					})
-					:wait()
-				if proc.code ~= 0 then
-					tell_error(_cmd[1] .. ": " .. output)
-					return false
-				end
-				return true
-			end
-			-- set up escape codes for different highlighting in header:
-			local hl = {
-				def = "\27[0m", -- ordinary text
-				map = "\27[38;2;255;235;205m", -- keymap
-				act = "\27[38;2;255;64;64m", -- action description
-			}
-			local function keymap_header_str(keymap, action_description)
-				return hl.def
-					.. "<"
-					.. hl.map
-					.. keymap
-					.. hl.def
-					.. "> to "
-					.. hl.act
-					.. action_description
-					.. hl.def
-			end
 			-- NOTE: delimiter has to be both a valid Lua pattern and AWK regex
 			local delimiter = "[*+]?[ \t]+"
 			local function extract_branch_name(line) return vim.split(line, delimiter)[2] end
