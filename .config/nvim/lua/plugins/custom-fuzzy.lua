@@ -152,9 +152,63 @@ return {
 			})
 		end
 
+		local function fzf_lua_git_worktrees()
+			local function get_sel(selecteds)
+				local sel = selecteds[1]
+				if not sel then return nil end
+				local ws_pos = string.find(sel, " ", 1, true) or 0
+				if ws_pos > 0 then sel = string.sub(sel, 1, ws_pos - 1) end
+				return sel
+			end
+			return fzf_lua.git_worktrees({
+				header = table.concat({
+					":: " .. keymap_header_str("ctrl-x", "delete"),
+					keymap_header_str("ctrl-r", "create"),
+				}, " | "),
+				actions = {
+					default = function(sels)
+						local sel = get_sel(sels)
+						if not sel then
+							tell_error("Worktree to switch to not given!")
+							return
+						end
+						vim.api.nvim_cmd({ cmd = "cd", args = { sel } }, {})
+						tell_info("Switched to worktree " .. sel)
+					end,
+					["ctrl-r"] = {
+						fn = function(_, opts)
+							opts = opts or {}
+							local path = opts.last_query
+							if not path then
+								tell_error("Path for new worktree not given!")
+								return
+							end
+							if not system_or_notify({ "git", "worktree", "add", path, "HEAD" }) then
+								tell_error("Failed to create worktree " .. path)
+							end
+						end,
+						reload = true,
+					},
+					["ctrl-x"] = {
+						fn = function(sels)
+							local sel = get_sel(sels)
+							if not sel then
+								tell_error("Worktree to remove not given!")
+								return
+							end
+							if not system_or_notify({ "git", "worktree", "remove", sel }) then
+								tell_error("Failed to delete worktree " .. sel)
+							end
+						end,
+						reload = true,
+					},
+				},
+			})
+		end
+
 		return {
 			{ "<leader>f<space>", id = "fzf_lua_resume", fzf_lua.resume },
-			{ "<leader>fw", id = "fzf_lua_git_worktrees", fzf_lua.git_worktrees },
+			{ "<leader>fw", id = "fzf_lua_git_worktrees", fzf_lua_git_worktrees },
 			{ "<leader>ft", id = "fzf_lua_tags", fzf_lua.tags },
 			{ "<leader>fh", id = "fzf_lua_oldfiles", fzf_lua.oldfiles },
 			{ "<leader>fl", id = "fzf_lua_blines", fzf_lua.blines },
