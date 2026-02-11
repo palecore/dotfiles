@@ -54,10 +54,18 @@ return {
 	{
 		"olimorris/codecompanion.nvim",
 		version = "^18.0.0",
-		cmd = { "CodeCompanion", "CodeCompanionChat" },
+		cmd = {
+			"CodeCompanion",
+			"CodeCompanionActions",
+			"CodeCompanionChat",
+			"CodeCompanionCmd",
+		},
 		keys = {
-			{ "<leader>aa", "<cmd>CodeCompanionChat<cr>", id = "ai_chat" },
-			{ "<leader>ai", ":CodeCompanion<space>", id = "ai_inline" },
+			{ "<leader>aa", "<cmd>CodeCompanionChat Toggle<cr>", id = "ai_chat" },
+			{ "<leader>aA", "<cmd>CodeCompanionActions<cr>", id = "ai_actions" },
+			{ "<leader>Aa", "<cmd>CodeCompanionActions<cr>", id = "ai_actions" },
+			{ "<leader>AA", "<cmd>CodeCompanionActions<cr>", id = "ai_actions" },
+			{ "<leader>ai", ":CodeCompanion<space>", id = "ai_inline", mode = { "n", "v" } },
 			{ "<leader>ac", ":CodeCompanionCmd<space>", id = "ai_cmd" },
 		},
 		dependencies = {
