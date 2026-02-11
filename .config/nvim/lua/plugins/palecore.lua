@@ -15,14 +15,13 @@ return {
 			})
 		end,
 	},
-
 	{
 		"ggandor/leap.nvim",
-		keys = {
-			{ "s", "<Plug>(leap)", mode = { "n", "x", "o" }, id = "leap" },
-			{ "S", "<Plug>(leap-from-window)", mode = { "n" }, id = "leap_from_window" },
-		},
-		opts = {},
+		lazy = false,
+		init = function()
+			vim.keymap.set({ "n", "x", "o" }, "s", "<Plug>(leap)")
+			vim.keymap.set({ "n" }, "S", "<Plug>(leap-from-window)")
+		end,
 	},
 	{
 		"github/copilot.vim",
