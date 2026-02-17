@@ -45,9 +45,9 @@ return {
 				mode = "i",
 				id = "copilot_accept",
 			},
-			{ "<c-h>", "<Plug>(copilot-dismiss)", mode = "i", id = "copilot_dismiss" },
-			{ "<c-p>", "<Plug>(copilot-previous)", mode = "i", id = "copilot_previous" },
-			{ "<c-n>", "<Plug>(copilot-next)", mode = "i", id = "copilot_next" },
+			{ "<c-h>", function() vim.fn["copilot#Dismiss"]() end, mode = "i", id = "copilot_dismiss" },
+			{ "<c-p>", function() vim.fn["copilot#Previous"]() end, mode = "i", id = "copilot_previous" },
+			{ "<c-n>", function() vim.fn["copilot#Next"]() end, mode = "i", id = "copilot_next" },
 		},
 	},
 	{
