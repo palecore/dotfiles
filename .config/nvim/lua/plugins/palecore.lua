@@ -64,7 +64,12 @@ return {
 			{ "<leader>aA", "<cmd>CodeCompanionActions<cr>", id = "ai_actions" },
 			{ "<leader>Aa", "<cmd>CodeCompanionActions<cr>", id = "ai_actions" },
 			{ "<leader>AA", "<cmd>CodeCompanionActions<cr>", id = "ai_actions" },
-			{ "<leader>ai", ":CodeCompanion<space>", id = "ai_inline", mode = { "n", "v" } },
+			{
+				"<leader>ai",
+				":CodeCompanion<space>#{chat}<space>#{buffer}<space>",
+				id = "ai_inline",
+				mode = { "n", "v" },
+			},
 			{ "<leader>ac", ":CodeCompanionCmd<space>", id = "ai_cmd" },
 		},
 		dependencies = {
