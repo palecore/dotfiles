@@ -76,6 +76,61 @@ return {
 		opts = {
 			-- [!TIP] to open in the current buffer:
 			-- display = { chat = { window = { layout = "buffer" } } },
+			diff_view = {
+				layout = "inline",
+				context_lines = 3,
+				show_line_numbers = true,
+				highlight_added = "DiffAdd",
+				highlight_removed = "DiffDelete",
+			},
+			interactions = {
+				chat = {
+					tools = {
+						groups = {
+							["develop"] = {
+								description = "Custom comprehensive skillset for development",
+								system_prompt = "You have access to the following tools:"
+									.. " fetching webpages,"
+									.. " reading, writing and creating files;"
+									.. " searching and grepping throughout files; "
+									.. " and saving and retrieving conversation memory.",
+								tools = {
+									"create_file",
+									"delete_file",
+									"fetch_webpage",
+									"file_search",
+									"files",
+									"grep_search",
+									"insert_edit_into_file",
+									"memory",
+									"read_file",
+								},
+								opts = {
+									collapse_tools = false, -- show tools separately
+								},
+							},
+							["research"] = {
+								description = "Custom comprehensive skillset for research",
+								system_prompt = "You have access to the following tools:"
+									.. " fetching webpages,"
+									.. " reading, writing and creating files;"
+									.. " searching and grepping throughout files; "
+									.. " and saving and retrieving conversation memory.",
+								tools = {
+									"fetch_webpage",
+									"file_search",
+									"grep_search",
+									"memory",
+									"read_file",
+								},
+								opts = {
+									collapse_tools = false, -- show tools separately
+								},
+							}
+						},
+					},
+				},
+			},
 			extensions = {
 				spinner = {},
 				history = {
