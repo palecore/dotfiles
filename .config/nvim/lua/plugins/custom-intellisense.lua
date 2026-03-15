@@ -1,6 +1,7 @@
 local function try_async_register_prettier_apex()
 	local self = {}
 	function self.start()
+		if vim.fn.executable("npm") == 0 then return end
 		local get_apex_prettier_plugin_npm_cmd =
 			{ "npm", "list", "--global", "--parseable", "prettier-plugin-apex" }
 		vim.system(
