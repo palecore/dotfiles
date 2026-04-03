@@ -252,13 +252,22 @@ return {
 			local function run_this_file_action() action_store.exec_action("run_this_file") end
 
 			local function async_format_null_ls_prio()
-				local ft = vim.bo.filetype
-				local fallback_format = function() vim.lsp.buf.format({ async = true }) end
+				local fallback = function() vim.lsp.buf.format({ async = true }) end
+				--
 				local has_null_ls, null_ls_srcs = pcall(require, "null-ls.sources")
-				if not has_null_ls then return fallback_format() end
-				local ft_has_null_ls = #null_ls_srcs.get_available(ft, "NULL_LS_FORMATTING") > 0
-				if not ft_has_null_ls then return fallback_format() end
-				vim.lsp.buf.format({ async = true, name = "null-ls" })
+				if not has_null_ls then return fallback() end
+				--
+				local is_visual_mode = string.lower((vim.api.nvim_get_mode() or {}).mode) == "v"
+				local fmt_method = is_visual_mode and "NULL_LS_RANGE_FORMATTING" or "NULL_LS_FORMATTING"
+				--
+				local ft = vim.bo.filetype
+				local ft_has_null_ls = #null_ls_srcs.get_available(ft, fmt_method) > 0
+				if not ft_has_null_ls then return fallback() end
+				--
+				local is_null_ls_client_attached = #vim.lsp.get_clients({ bufnr = 0, name = "null-ls" }) > 0
+				if not is_null_ls_client_attached then return fallback() end
+				--
+				return vim.lsp.buf.format({ async = true, name = "null-ls" })
 			end
 			action_store.set_action("format", async_format_null_ls_prio)
 			local function format_action() action_store.exec_action("format") end
