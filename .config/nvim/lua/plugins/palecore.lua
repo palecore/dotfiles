@@ -1,7 +1,5 @@
 local function gh_buf_toggle() return require("palecore.gh-copilot").buf_toggle() end
-local function gh_global_disable()
-	return require("palecore.gh-copilot").global_disable()
-end
+local function gh_global_disable() return require("palecore.gh-copilot").global_disable() end
 
 ---@type LazySpec[]
 return {
@@ -128,7 +126,7 @@ return {
 								opts = {
 									collapse_tools = false, -- show tools separately
 								},
-							}
+							},
 						},
 					},
 				},
