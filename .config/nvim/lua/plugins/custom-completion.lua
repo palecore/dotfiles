@@ -21,6 +21,8 @@ return {
 				["<C-n>"] = { "select_next", "fallback" },
 				["<Tab>"] = { snip_forward_if_active, "fallback" },
 				["<S-Tab>"] = { snip_backward_if_active, "fallback" },
+				["<C-l>"] = { "scroll_documentation_down", "show_documentation", "fallback_to_mappings" },
+				["<C-h>"] = { "hide_documentation", "fallback_to_mappings" },
 			},
 			cmdline = {
 				keymap = {
