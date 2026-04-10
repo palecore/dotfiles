@@ -12,6 +12,17 @@ function M.global_disable()
 	end
 end
 
+function M.is_buf_enabled() return not not vim.b.copilot_enabled end
+
+---@deprecated
 function M.buf_status() return vim.b.copilot_enabled and "GHAI" or "" end
+
+function M.buf_status_def()
+	return {
+		"b:copilot_enabled",
+		fmt = function(enabled) return enabled == "true" and "A" or "" end,
+		color = { fg = "black", bg = "orange" },
+	}
+end
 
 return M
