@@ -239,6 +239,33 @@ return {
 				print(new_wrap and "wrap" or "nowrap")
 			end
 
+			---Execute a provided Vim command and capture its output to the clipboard.
+			---@param opts vim.api.keyset.create_user_command.command_args
+			local function capture_usercmd(opts)
+				-- Normalize options:
+				opts = opts or {}
+				--
+				local output = vim.fn.execute(opts.args)
+				-- Remove leading newline that execute() often returns
+				output = output:gsub("^%s+", "")
+				-- Try to target the same register as the one used for yanking etc.:
+				local target_register = ""
+				local clipboard_reg = vim.api.nvim_get_option_value("clipboard", {})
+				if clipboard_reg == "unnamed" then
+					target_register = "*"
+				elseif clipboard_reg == "unnamedplus" then
+					target_register = "+"
+				end
+				vim.fn.setreg(target_register, output)
+				local lines_count = #vim.split(output or "", "\r?\n", { trimempty = true })
+				vim.notify(("%d lines captured to the clipboard."):format(lines_count), vim.log.levels.INFO)
+			end
+			vim.api.nvim_create_user_command("Capture", capture_usercmd, {
+				complete = "command",
+				desc = "Execute a Vim command and capture its output to the clipboard",
+				force = true,
+				nargs = "+",
+			})
 			local function run_this_file()
 				local cur_file = vim.api.nvim_buf_get_name(0)
 				local is_executable = vim.fn.executable(cur_file) == 1
