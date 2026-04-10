@@ -75,10 +75,14 @@ return {
 		},
 		init = function()
 			vim.g.codecompanion_nvim_use_memory = false
+			vim.g.codecompanion_nvim_open_in_curr_win = false
 		end,
 		opts = {
-			-- [!TIP] to open in the current buffer:
-			-- display = { chat = { window = { layout = "buffer" } } },
+			-- [!TIP] set `g:codecompanion_nvim_open_in_curr_buf` to `true`
+			-- to open CodeCompanion Chat window in the current window:
+			display = (vim.g.codecompanion_nvim_open_in_curr_win and {
+				chat = { window = { layout = "buffer" } },
+			} or {}),
 			diff_view = {
 				layout = "inline",
 				context_lines = 3,
