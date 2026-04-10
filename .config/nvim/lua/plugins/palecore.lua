@@ -73,6 +73,9 @@ return {
 			"nvim-treesitter/nvim-treesitter",
 			"ravitemer/codecompanion-history.nvim", -- session management
 		},
+		init = function()
+			vim.g.codecompanion_nvim_use_memory = false
+		end,
 		opts = {
 			-- [!TIP] to open in the current buffer:
 			-- display = { chat = { window = { layout = "buffer" } } },
@@ -90,10 +93,10 @@ return {
 							["develop"] = {
 								description = "Custom comprehensive skillset for development",
 								system_prompt = "You have access to the following tools:"
-									.. " fetching webpages,"
-									.. " reading, writing and creating files;"
-									.. " searching and grepping throughout files; "
-									.. " and saving and retrieving conversation memory.",
+									.. " reading, searching and grepping through local files;"
+									.. " writing and creating local files;"
+									.. (vim.g.codecompanion_nvim_use_memory and " saving and retrieving conversation memory;" or "")
+									.. " and fetching webpages.",
 								tools = {
 									"create_file",
 									"delete_file",
@@ -102,8 +105,8 @@ return {
 									"files",
 									"grep_search",
 									"insert_edit_into_file",
-									"memory",
 									"read_file",
+									vim.g.codecompanion_nvim_use_memory and "memory" or nil,
 								},
 								opts = {
 									collapse_tools = false, -- show tools separately
@@ -112,16 +115,15 @@ return {
 							["research"] = {
 								description = "Custom comprehensive skillset for research",
 								system_prompt = "You have access to the following tools:"
-									.. " fetching webpages,"
-									.. " reading, writing and creating files;"
-									.. " searching and grepping throughout files; "
-									.. " and saving and retrieving conversation memory.",
+									.. " reading, searching and grepping through local files;"
+									.. (vim.g.codecompanion_nvim_use_memory and " saving and retrieving conversation memory;" or "")
+									.. " and fetching webpages.",
 								tools = {
 									"fetch_webpage",
 									"file_search",
 									"grep_search",
-									"memory",
 									"read_file",
+									vim.g.codecompanion_nvim_use_memory and "memory" or nil,
 								},
 								opts = {
 									collapse_tools = false, -- show tools separately
