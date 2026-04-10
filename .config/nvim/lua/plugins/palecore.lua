@@ -30,6 +30,14 @@ return {
 			-- by default, disable copilot for all filetypes:
 			vim.g.copilot_filetypes = { ["*"] = false }
 			vim.g.copilot_no_tab_map = true
+			vim.keymap.set("i", "<c-l>", 'copilot#Accept("\\<CR>")', {
+				expr = true,
+				replace_keycodes = false,
+				desc = "Copilot: Accept with newline"
+			})
+			vim.keymap.set("i", "<c-h>", "<Plug>(copilot-dismiss)", { desc = "Copilot: Dismiss" })
+			vim.keymap.set("i", "<c-p>", "<Plug>(copilot-previous)", { desc = "Copilot: Previous" })
+			vim.keymap.set("i", "<c-n>", "<Plug>(copilot-next)", { desc = "Copilot: Next" })
 		end,
 		keys = {
 			-- only enable it explicitly per buffer:
@@ -37,17 +45,6 @@ return {
 			{ "<leader>tA", gh_global_disable, id = "disable_ai1", desc = "Disable GenAI" },
 			{ "<leader>Ta", gh_global_disable, id = "disable_ai2", desc = "Disable GenAI" },
 			{ "<leader>TA", gh_global_disable, id = "disable_ai3", desc = "Disable GenAI" },
-			{
-				"<c-l>",
-				function() return vim.fn["copilot#Accept"]("\r") end,
-				expr = true,
-				replace_keycodes = false,
-				mode = "i",
-				id = "copilot_accept",
-			},
-			{ "<c-h>", vim.fn["copilot#Dismiss"], mode = "i", id = "copilot_dismiss" },
-			{ "<c-p>", vim.fn["copilot#Previous"], mode = "i", id = "copilot_previous" },
-			{ "<c-n>", vim.fn["copilot#Next"], mode = "i", id = "copilot_next" },
 		},
 	},
 	{
