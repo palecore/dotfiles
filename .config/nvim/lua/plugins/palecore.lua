@@ -124,6 +124,10 @@ return {
 			},
 			interactions = {
 				chat = {
+					adapter = {
+						name = "copilot",
+						model = "claude-sonnet-4.6",
+					},
 					tools = {
 						groups = {
 							["develop"] = {
@@ -166,6 +170,12 @@ return {
 								},
 							},
 						},
+					},
+				},
+				inline = {
+					adapter = {
+						name = "copilot",
+						model = "claude-sonnet-4.6",
 					},
 				},
 			},
