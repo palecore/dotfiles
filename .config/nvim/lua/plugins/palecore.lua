@@ -1,6 +1,14 @@
 local function gh_buf_toggle() return require("palecore.gh-copilot").buf_toggle() end
 local function gh_global_disable() return require("palecore.gh-copilot").global_disable() end
 
+local my_fav_models = {
+	"claude-haiku-4.5",
+	"claude-opus-4.6",
+	"claude-sonnet-4.6",
+	"gpt-4.1",
+	"gpt-5-mini",
+}
+
 ---@type LazySpec[]
 return {
 	{
@@ -89,6 +97,30 @@ return {
 				show_line_numbers = true,
 				highlight_added = "DiffAdd",
 				highlight_removed = "DiffDelete",
+			},
+			adapters = {
+				http = {
+					copilot_pro = function()
+						return require("codecompanion.adapters").extend("copilot", {
+							schema = { model = { default = "claude-opus-4.6", choices = my_fav_models } },
+						})
+					end,
+					copilot_mid = function()
+						return require("codecompanion.adapters").extend("copilot", {
+							schema = { model = { default = "claude-sonnet-4.6", choices = my_fav_models } },
+						})
+					end,
+					copilot_lite = function()
+						return require("codecompanion.adapters").extend("copilot", {
+							schema = { model = { default = "claude-haiku-4.5", choices = my_fav_models } },
+						})
+					end,
+					copilot_free = function()
+						return require("codecompanion.adapters").extend("copilot", {
+							schema = { model = { default = "gpt-4.1", choices = my_fav_models } },
+						})
+					end,
+				},
 			},
 			interactions = {
 				chat = {
