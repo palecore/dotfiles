@@ -1,5 +1,30 @@
 ---My custom neovim configuration.
 
+local function shred_nonempty_file()
+	local filepath = vim.api.nvim_buf_get_name(0)
+	if filepath == "" then
+		vim.notify("Not a file buffer", vim.log.levels.WARN)
+		return
+	end
+	-- ensure it's a real file in the file system:
+	if vim.fn.filereadable(filepath) ~= 1 then
+		vim.notify("Not a readable file: " .. filepath, vim.log.levels.WARN)
+		return
+	end
+	if vim.fn.confirm("Shred this file?\n" .. filepath, "&Yes\n&No", 2) == 1 then
+		vim.api.nvim_buf_delete(0, { force = true })
+		vim.fn.jobstart({ "shred", "-zu", filepath }, {
+			on_exit = function(_, code)
+				if code ~= 0 then vim.notify("Shred failed for " .. filepath, vim.log.levels.ERROR) end
+			end,
+		})
+	end
+end
+
+local function delete_nonempty_file()
+	if vim.fn.confirm("Delete this non-empty file?", "&Yes\n&No", 2) == 1 then vim.cmd("Delete!") end
+end
+
 ---@type LazySpec[]
 return {
 	{ "gpanders/editorconfig.nvim" },
@@ -10,6 +35,12 @@ return {
 		"tpope/vim-dispatch",
 		keys = {
 			{ "<leader>dd", "<cmd>Delete<cr>", id = "delete_this" },
+			{ "<leader>dD", delete_nonempty_file, id = "delete_this_force_dD" },
+			{ "<leader>Dd", delete_nonempty_file, id = "delete_this_force_Dd" },
+			{ "<leader>DD", delete_nonempty_file, id = "delete_this_force_DD" },
+			{ "<leader>dS", shred_nonempty_file, id = "shred_this_force_dS" },
+			{ "<leader>Ds", shred_nonempty_file, id = "shred_this_force_Ds" },
+			{ "<leader>DS", shred_nonempty_file, id = "shred_this_force_DS" },
 		},
 	},
 	{
