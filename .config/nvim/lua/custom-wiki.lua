@@ -46,6 +46,9 @@ local function vimwiki_init(wiki_dirs)
 		}
 	end
 	vim.g.vimwiki_list = vimwiki_list
+	vim.g.vimwiki_key_mappings = {
+		headers = 0,
+	}
 end
 
 ---@param wiki_dirs custom_wiki.WikiDir[]
