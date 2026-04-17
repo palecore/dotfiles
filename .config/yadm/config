@@ -1,2 +1,2 @@
 [core]
-	excludesFile = ./ignore
+	excludesFile = ~/.config/yadm/ignore
