@@ -11,6 +11,8 @@
 /.config/gh/hosts.yml
 # github-copilot/apps.json - contains secrets
 /.config/github-copilot/apps.json
+# github-copilot/versions.json - contains local installation data
+/.config/github-copilot/versions.json
 /.config/google-chrome-for-testing/Crash Reports/
 # htoprc - technical & maintained by htop itself
 /.config/htop/htoprc
