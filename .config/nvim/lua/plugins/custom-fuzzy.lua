@@ -9,6 +9,7 @@ return {
 			winopts = {
 				width = 0.9,
 				height = 0.9,
+				---@diagnostic disable-next-line: missing-fields
 				preview = {
 					layout = "vertical",
 				},
