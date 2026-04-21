@@ -10,8 +10,7 @@ return {
 				width = 0.9,
 				height = 0.9,
 				preview = {
-					horizontal = "right:50%",
-					border = "noborder",
+					layout = "vertical",
 				},
 			},
 			fzf_opts = { ["--layout"] = "default" },
