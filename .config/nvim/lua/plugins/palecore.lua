@@ -85,119 +85,121 @@ return {
 			vim.g.codecompanion_nvim_use_memory = false
 			vim.g.codecompanion_nvim_open_in_curr_win = false
 		end,
-		opts = {
-			-- [!TIP] set `g:codecompanion_nvim_open_in_curr_buf` to `true`
-			-- to open CodeCompanion Chat window in the current window:
-			display = (vim.g.codecompanion_nvim_open_in_curr_win and {
-				chat = { window = { layout = "buffer" } },
-			} or {}),
-			diff_view = {
-				layout = "inline",
-				context_lines = 3,
-				show_line_numbers = true,
-				highlight_added = "DiffAdd",
-				highlight_removed = "DiffDelete",
-			},
-			adapters = {
-				http = {
-					copilot_pro = function()
-						return require("codecompanion.adapters").extend("copilot", {
-							schema = { model = { default = "claude-opus-4.6", choices = my_fav_models } },
-						})
-					end,
-					copilot_mid = function()
-						return require("codecompanion.adapters").extend("copilot", {
-							schema = { model = { default = "claude-sonnet-4.6", choices = my_fav_models } },
-						})
-					end,
-					copilot_lite = function()
-						return require("codecompanion.adapters").extend("copilot", {
-							schema = { model = { default = "claude-haiku-4.5", choices = my_fav_models } },
-						})
-					end,
-					copilot_free = function()
-						return require("codecompanion.adapters").extend("copilot", {
-							schema = { model = { default = "gpt-4.1", choices = my_fav_models } },
-						})
-					end,
+		config = function()
+			require("codecompanion").setup({
+				-- [!TIP] set `g:codecompanion_nvim_open_in_curr_buf` to `true`
+				-- to open CodeCompanion Chat window in the current window:
+				display = (vim.g.codecompanion_nvim_open_in_curr_win and {
+					chat = { window = { layout = "buffer" } },
+				} or {}),
+				diff_view = {
+					layout = "inline",
+					context_lines = 3,
+					show_line_numbers = true,
+					highlight_added = "DiffAdd",
+					highlight_removed = "DiffDelete",
 				},
-			},
-			interactions = {
-				chat = {
-					adapter = {
-						name = "copilot",
-						model = "claude-sonnet-4.6",
+				adapters = {
+					http = {
+						copilot_pro = function()
+							return require("codecompanion.adapters").extend("copilot", {
+								schema = { model = { default = "claude-opus-4.6", choices = my_fav_models } },
+							})
+						end,
+						copilot_mid = function()
+							return require("codecompanion.adapters").extend("copilot", {
+								schema = { model = { default = "claude-sonnet-4.6", choices = my_fav_models } },
+							})
+						end,
+						copilot_lite = function()
+							return require("codecompanion.adapters").extend("copilot", {
+								schema = { model = { default = "claude-haiku-4.5", choices = my_fav_models } },
+							})
+						end,
+						copilot_free = function()
+							return require("codecompanion.adapters").extend("copilot", {
+								schema = { model = { default = "gpt-4.1", choices = my_fav_models } },
+							})
+						end,
 					},
-					tools = {
-						groups = {
-							["develop"] = {
-								description = "Custom comprehensive skillset for development",
-								system_prompt = "You have access to the following tools:"
-									.. " reading, searching and grepping through local files;"
-									.. " writing and creating local files;"
-									.. (vim.g.codecompanion_nvim_use_memory and " saving and retrieving conversation memory;" or "")
-									.. " and fetching webpages.",
-								tools = {
-									"create_file",
-									"delete_file",
-									"fetch_webpage",
-									"file_search",
-									"files",
-									"grep_search",
-									"insert_edit_into_file",
-									"read_file",
-									vim.g.codecompanion_nvim_use_memory and "memory" or nil,
+				},
+				interactions = {
+					chat = {
+						adapter = {
+							name = "copilot",
+							model = "claude-sonnet-4.6",
+						},
+						tools = {
+							groups = {
+								["develop"] = {
+									description = "Custom comprehensive skillset for development",
+									system_prompt = "You have access to the following tools:"
+										.. " reading, searching and grepping through local files;"
+										.. " writing and creating local files;"
+										.. (vim.g.codecompanion_nvim_use_memory and " saving and retrieving conversation memory;" or "")
+										.. " and fetching webpages.",
+									tools = {
+										"create_file",
+										"delete_file",
+										"fetch_webpage",
+										"file_search",
+										"files",
+										"grep_search",
+										"insert_edit_into_file",
+										"read_file",
+										vim.g.codecompanion_nvim_use_memory and "memory" or nil,
+									},
+									opts = {
+										collapse_tools = false, -- show tools separately
+									},
 								},
-								opts = {
-									collapse_tools = false, -- show tools separately
-								},
-							},
-							["research"] = {
-								description = "Custom comprehensive skillset for research",
-								system_prompt = "You have access to the following tools:"
-									.. " reading, searching and grepping through local files;"
-									.. (vim.g.codecompanion_nvim_use_memory and " saving and retrieving conversation memory;" or "")
-									.. " and fetching webpages.",
-								tools = {
-									"fetch_webpage",
-									"file_search",
-									"grep_search",
-									"read_file",
-									vim.g.codecompanion_nvim_use_memory and "memory" or nil,
-								},
-								opts = {
-									collapse_tools = false, -- show tools separately
+								["research"] = {
+									description = "Custom comprehensive skillset for research",
+									system_prompt = "You have access to the following tools:"
+										.. " reading, searching and grepping through local files;"
+										.. (vim.g.codecompanion_nvim_use_memory and " saving and retrieving conversation memory;" or "")
+										.. " and fetching webpages.",
+									tools = {
+										"fetch_webpage",
+										"file_search",
+										"grep_search",
+										"read_file",
+										vim.g.codecompanion_nvim_use_memory and "memory" or nil,
+									},
+									opts = {
+										collapse_tools = false, -- show tools separately
+									},
 								},
 							},
 						},
 					},
-				},
-				inline = {
-					adapter = {
-						name = "copilot",
-						model = "claude-sonnet-4.6",
-					},
-				},
-			},
-			extensions = {
-				spinner = {},
-				history = {
-					enabled = true,
-					opts = {
-						continue_last_chat = true,
-						delete_on_clearing_chat = true,
-						dir_to_save = vim.fn.stdpath("data") .. "/codecompanion-history",
-						title_generation_opts = {
-							-- use lightweight model to avoid exhausting premium interactions:
-							adapter = "copilot",
-							model = "gpt-4o",
-							-- refresh before and after the first prompt so that user prompt is considered:
-							refresh_every_n_prompts = 1,
-							max_refreshes = 2,
+					inline = {
+						adapter = {
+							name = "copilot",
+							model = "claude-sonnet-4.6",
 						},
 					},
 				},
-			},
-		},
+				extensions = {
+					spinner = {},
+					history = {
+						enabled = true,
+						opts = {
+							continue_last_chat = true,
+							delete_on_clearing_chat = true,
+							dir_to_save = vim.fn.stdpath("data") .. "/codecompanion-history",
+							title_generation_opts = {
+								-- use lightweight model to avoid exhausting premium interactions:
+								adapter = "copilot",
+								model = "gpt-4o",
+								-- refresh before and after the first prompt so that user prompt is considered:
+								refresh_every_n_prompts = 1,
+								max_refreshes = 2,
+							},
+						},
+					},
+				},
+			})
+		end,
 	},
 }
