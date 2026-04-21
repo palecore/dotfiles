@@ -10,7 +10,6 @@ return {
 				width = 0.9,
 				height = 0.9,
 				preview = {
-					default = "bat",
 					horizontal = "right:50%",
 					border = "noborder",
 				},
