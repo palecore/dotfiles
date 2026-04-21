@@ -13,7 +13,6 @@ return {
 					horizontal = "right:50%",
 					border = "noborder",
 				},
-				border = false,
 			},
 			fzf_opts = { ["--layout"] = "default" },
 			keymap = {
