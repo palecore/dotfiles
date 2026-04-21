@@ -39,7 +39,7 @@ return {
 			vim.keymap.set("i", "<c-l>", 'copilot#Accept("\\<CR>")', {
 				expr = true,
 				replace_keycodes = false,
-				desc = "Copilot: Accept with newline"
+				desc = "Copilot: Accept with newline",
 			})
 			vim.keymap.set("i", "<c-h>", "<Plug>(copilot-dismiss)", { desc = "Copilot: Dismiss" })
 			vim.keymap.set("i", "<c-p>", "<Plug>(copilot-previous)", { desc = "Copilot: Previous" })
