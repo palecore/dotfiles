@@ -20,31 +20,17 @@ return {
 	},
 	{
 		"nvim-treesitter/nvim-treesitter",
+		lazy = false, -- This plugin explicitly mentions it does not support lazy-loading.
+		branch = "main",
 		build = ":TSUpdate",
 		config = function()
-			require("nvim-treesitter.configs").setup({
-				auto_install = false,
-				ignore_install = {},
-				modules = {},
-				sync_install = false,
-				ensure_installed = {
-					"bash",
-					"jq",
-					"lua",
-					"markdown",
-					"markdown_inline",
-					"yaml",
-					"vimdoc", -- Without this, huge "Impossible Query" errors on vim docs.
-				},
-				highlight = { enable = true },
-				indent = { enable = true },
-				incremental_selection = {
-					enable = true,
-					keymaps = {
-						node_incremental = "<c-n>",
-						node_decremental = "<c-p>",
-					},
-				},
+			require("nvim-treesitter").setup({})
+			-- explicitly specify extra filetypes that should expect & use treesitter highlighting
+			local ts_hl_extra_filetypes = {
+			}
+			vim.api.nvim_create_autocmd("FileType", {
+				pattern = ts_hl_extra_filetypes,
+				callback = function() vim.treesitter.start() end,
 			})
 			-- Highlight vimwiki files as markdown:
 			vim.treesitter.language.register("markdown", { "vimwiki" })
