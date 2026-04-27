@@ -185,7 +185,6 @@ return {
 					history = {
 						enabled = true,
 						opts = {
-							continue_last_chat = true,
 							delete_on_clearing_chat = true,
 							dir_to_save = vim.fn.stdpath("data") .. "/codecompanion-history",
 							title_generation_opts = {
