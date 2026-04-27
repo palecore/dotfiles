@@ -27,6 +27,11 @@ return {
 			require("nvim-treesitter").setup({})
 			-- explicitly specify extra filetypes that should expect & use treesitter highlighting
 			local ts_hl_extra_filetypes = {
+				"apex",
+				"bash",
+				"gitcommit",
+				"sh",
+				"vimwiki",
 			}
 			vim.api.nvim_create_autocmd("FileType", {
 				pattern = ts_hl_extra_filetypes,
