@@ -205,6 +205,7 @@ return {
 							always_accept = { modes = { n = "gdA" } },
 							accept_change = { modes = { n = "gda" } },
 							reject_change = { modes = { n = "gdr" } },
+							cancel = { modes = { n = "gdc" } },
 						},
 					},
 					chat = {
