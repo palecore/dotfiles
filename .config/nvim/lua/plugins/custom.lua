@@ -266,6 +266,71 @@ return {
 				force = true,
 				nargs = "+",
 			})
+
+			---@return string text
+			local function get_text_by_mode()
+				local mode = vim.api.nvim_get_mode().mode
+				local buf = 0
+
+				-- VISUAL MODES: get selection
+				if mode == "v" or mode == "V" or mode == "\22" then
+					local start_pos = vim.fn.getpos("v")
+					local end_pos = vim.fn.getpos(".")
+
+					local start_row, start_col = start_pos[2] - 1, start_pos[3] - 1
+					local end_row, end_col = end_pos[2] - 1, end_pos[3]
+
+					local lines = vim.api.nvim_buf_get_text(buf, start_row, start_col, end_row, end_col, {})
+					return table.concat(lines, "\n")
+				end
+
+				-- INSERT MODE: get current line
+				if mode:match("[iR]") then return vim.api.nvim_get_current_line() end
+
+				-- NORMAL (and everything else): get whole buffer
+				local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
+				return table.concat(lines, "\n")
+			end
+
+			local function yank_md_as_rich()
+				local text = get_text_by_mode()
+				local chars_count = #text
+				local lines_count = #vim.split(text, "\r?\n", { trimempty = false })
+
+				local tmp_html = vim.fn.fnamemodify(vim.fn.tempname(), ":t") .. ".html"
+				vim.system(
+					{ "pandoc", "--from=gfm", "--to=html", "-o", tmp_html },
+					{ stdin = text },
+					function(pandoc_out)
+						if pandoc_out.code ~= 0 then
+							local msg = "Pandoc failed to convert markdown to HTML: " .. (pandoc_out.stderr or "")
+							vim.notify(msg, vim.log.levels.ERROR)
+							return
+						end
+
+						vim.system({
+							"powershell.exe",
+							"-NoProfile",
+							"-Command",
+							"$path = $input | Out-String; $path = $path.Trim(); Get-Content $path | Set-Clipboard -AsHtml",
+						}, { stdin = tmp_html }, function(ps_out)
+							vim.schedule(function() vim.fn.delete(tmp_html) end)
+							if ps_out.code ~= 0 then
+								local msg = "Filling Windows clipboard with rich text failed: "
+									.. (ps_out.stderr or "")
+								vim.notify(msg, vim.log.levels.ERROR)
+							else
+								local msg = ("Rich text from %d chars / %d lines copied to clipboard."):format(
+									chars_count,
+									lines_count
+								)
+								vim.notify(msg, vim.log.levels.INFO)
+							end
+						end)
+					end
+				)
+			end
+
 			local function run_this_file()
 				local cur_file = vim.api.nvim_buf_get_name(0)
 				local is_executable = vim.fn.executable(cur_file) == 1
@@ -393,6 +458,14 @@ return {
 			vim.keymap.set("n", "<leader>CP", "<cmd>cfirst<cr>", { desc = "first quickfix item" })
 			vim.keymap.set("n", "<leader>co", "<cmd>copen<cr>", { desc = "open quickfix itemlist" })
 			vim.keymap.set("n", "<leader>cc", "<cmd>cclose<cr>", { desc = "close quickfix itemlist" })
+
+			-- Rich text manipulation:
+			vim.keymap.set(
+				{ "n", "v" },
+				"<leader>yy",
+				yank_md_as_rich,
+				{ desc = "yank markdown as rich text" }
+			)
 		end,
 	},
 }
