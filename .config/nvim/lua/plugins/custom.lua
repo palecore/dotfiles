@@ -347,7 +347,7 @@ return {
 				if has_shebang_line then
 					local temp_file = vim.fn.tempname()
 					vim.fn.writefile(lines, temp_file, "")
-					vim.uv.fs_chmod(temp_file, tonumber("0700", 8), nil)
+					vim.uv.fs_chmod(temp_file, tonumber("0700", 8), function() end)
 					local function on_exit() vim.fn.delete(temp_file, "") end
 					nvim_cmd({ "split" })
 					nvim_cmd({ "enew" })
