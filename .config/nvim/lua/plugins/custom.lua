@@ -331,6 +331,73 @@ return {
 				)
 			end
 
+			local function paste_rich_as_html()
+				local self = {}
+				function self:start() self:powershell_get_rich_clip_html() end
+				function self:powershell_get_rich_clip_html()
+					vim.system({
+						"powershell.exe",
+						"-NoProfile",
+						"-Command",
+						"Get-Clipboard -TextFormatType Html -Raw",
+					}, {}, function(ps_out)
+						if ps_out.code ~= 0 then
+							local msg = "Failed to get clipboard HTML: " .. (ps_out.stderr or "")
+							vim.notify(msg, vim.log.levels.ERROR)
+							return
+						end
+						local html_text = (ps_out.stdout or "")
+						self:extract_html_body(html_text)
+					end)
+				end
+				function self:extract_html_body(html_text)
+					local body = html_text:match("<body[^>]*>(.-)</body>") or html_text
+					self:iconv_from_latin1_to_utf8(body)
+				end
+				function self:iconv_from_latin1_to_utf8(latin1_text)
+					vim.system(
+						{ "iconv", "-f", "latin1", "-t", "utf-8" },
+						{ stdin = latin1_text, stdout = true },
+						function(iconv_out)
+							if iconv_out.code ~= 0 then
+								local msg = "Failed to convert clipboard HTML from latin1 to utf-8: "
+									.. (iconv_out.stderr or "")
+								vim.notify(msg, vim.log.levels.ERROR)
+								return
+							end
+							local utf8_text = iconv_out.stdout or ""
+							self:pandoc_from_html_to_gfm(utf8_text)
+						end
+					)
+				end
+				function self:pandoc_from_html_to_gfm(html_utf8_text)
+					vim.system(
+						{ "pandoc", "--from=html", "--to=gfm" },
+						{ stdin = html_utf8_text, stdout = true },
+						function(pandoc_out)
+							if pandoc_out.code ~= 0 then
+								local msg = "Pandoc failed to convert HTML to markdown: "
+									.. (pandoc_out.stderr or "")
+								vim.notify(msg, vim.log.levels.ERROR)
+								return
+							end
+							self:put_text_to_buf(pandoc_out.stdout or "")
+						end
+					)
+				end
+				function self:put_text_to_buf(text)
+					local lines = vim.split(text, "\r?\n", { trimempty = false })
+					vim.schedule(function()
+						vim.api.nvim_put(lines, "l", true, true)
+						vim.notify(
+							("Pasted %d lines of markdown from rich text."):format(#lines),
+							vim.log.levels.INFO
+						)
+					end)
+				end
+				self:start()
+			end
+
 			local function run_this_file()
 				local cur_file = vim.api.nvim_buf_get_name(0)
 				local is_executable = vim.fn.executable(cur_file) == 1
@@ -465,6 +532,12 @@ return {
 				"<leader>yy",
 				yank_md_as_rich,
 				{ desc = "yank markdown as rich text" }
+			)
+			vim.keymap.set(
+				{ "n", "v" },
+				"<leader>pp",
+				paste_rich_as_html,
+				{ desc = "paste rich text as markdown" }
 			)
 		end,
 	},
