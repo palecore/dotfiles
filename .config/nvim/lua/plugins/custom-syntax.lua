@@ -27,14 +27,14 @@ return {
 			require("nvim-treesitter").setup({})
 			-- explicitly specify extra filetypes that should expect & use treesitter highlighting
 			local ts_hl_extra_filetypes = {
-				"apex",
-				"bash",
-				"gitcommit",
 				"sh",
 				"vimwiki",
 			}
+			local ts_hl_filetypes = {}
+			vim.list_extend(ts_hl_filetypes, ts_hl_extra_filetypes)
+			vim.list_extend(ts_hl_filetypes, require("nvim-treesitter").get_installed() or {})
 			vim.api.nvim_create_autocmd("FileType", {
-				pattern = ts_hl_extra_filetypes,
+				pattern = ts_hl_filetypes,
 				callback = function() vim.treesitter.start() end,
 			})
 			-- Highlight vimwiki files as markdown:
