@@ -39,6 +39,8 @@ return {
 			})
 			-- Highlight vimwiki files as markdown:
 			vim.treesitter.language.register("markdown", { "vimwiki" })
+			-- Highlight json5 & jsonc files as json:
+			vim.treesitter.language.register("json", { "json5", "jsonc" })
 			-- Explicitly highlight variables as identifiers:
 			require("custom-helpers").on_lazy_done(
 				function() vim.api.nvim_set_hl(0, "@variable", { link = "Identifier" }) end
