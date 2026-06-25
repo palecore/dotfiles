@@ -109,6 +109,11 @@ return {
 		end,
 	},
 	{
+		"f-person/auto-dark-mode.nvim",
+		dependencies = { "polirritmico/monokai-nightasty.nvim" },
+		opts = {},
+	},
+	{
 		"ggandor/leap.nvim",
 		lazy = false,
 		init = function()
@@ -297,6 +302,13 @@ return {
 					},
 				},
 			})
+		end,
+	},
+	{
+		"polirritmico/monokai-nightasty.nvim",
+		config = function()
+			require("monokai-nightasty").setup({})
+			require("monokai-nightasty").load()
 		end,
 	},
 }

@@ -52,6 +52,7 @@ return {
 	{
 		-- My custom colorscheme based on monokai
 		"sickill/vim-monokai",
+		enabled = false,
 		config = function()
 			vim.cmd.colorscheme("monokai")
 			require("custom-helpers").on_lazy_done(function()
