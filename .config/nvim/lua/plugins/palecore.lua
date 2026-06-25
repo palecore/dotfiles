@@ -1,12 +1,23 @@
 local function gh_buf_toggle() return require("palecore.gh-copilot").buf_toggle() end
 local function gh_global_disable() return require("palecore.gh-copilot").global_disable() end
 
+local my_avail_models = {
+	"claude-opus-4.6", ------ $ 5.00 /  .50  / 25.00
+	"claude-sonnet-4.6", ---- $ 3.00 /  .30  / 15.00
+	"gpt-5.4", -------------- $ 2.50 /  .25  / 15.00
+	"gpt-5.3-codex", -------- $ 1.75 /  .175 / 14.00
+	"gemini-2.5-pro", ------- $ 1.25 /  .125 / 10.00
+	"gemini-3.5-flash", ----- $ 1.50 /  .15  /  9.00
+	"claude-haiku-4.5", ----- $ 1.00 /  .10  /  5.00
+	"gpt-5.4-mini", --------- $  .75 /  .075 /  4.50
+	"gpt-5-mini", ----------- $  .25 /  .025 /  2.00
+}
+
 local my_fav_models = {
-	"claude-haiku-4.5",
 	"claude-opus-4.6",
 	"claude-sonnet-4.6",
-	"gpt-4.1",
-	"gpt-5-mini",
+	"gpt-5.3-codex",
+	"claude-haiku-4.5",
 }
 
 --- @type string Caveman skill prompt, distilled from JuliusBrussee/caveman (MIT) SKILL.md.
@@ -177,24 +188,24 @@ return {
 				},
 				adapters = {
 					http = {
-						copilot_pro = function()
+						copilot_best = function()
 							return require("codecompanion.adapters").extend("copilot", {
-								schema = { model = { default = "claude-opus-4.6", choices = my_fav_models } },
+								schema = { model = { default = my_fav_models[1], choices = my_avail_models } },
 							})
 						end,
-						copilot_mid = function()
+						copilot_betr = function()
 							return require("codecompanion.adapters").extend("copilot", {
-								schema = { model = { default = "claude-sonnet-4.6", choices = my_fav_models } },
+								schema = { model = { default = my_fav_models[2], choices = my_avail_models } },
+							})
+						end,
+						copilot_good = function()
+							return require("codecompanion.adapters").extend("copilot", {
+								schema = { model = { default = my_fav_models[3], choices = my_avail_models } },
 							})
 						end,
 						copilot_lite = function()
 							return require("codecompanion.adapters").extend("copilot", {
-								schema = { model = { default = "claude-haiku-4.5", choices = my_fav_models } },
-							})
-						end,
-						copilot_free = function()
-							return require("codecompanion.adapters").extend("copilot", {
-								schema = { model = { default = "gpt-4.1", choices = my_fav_models } },
+								schema = { model = { default = my_fav_models[4], choices = my_avail_models } },
 							})
 						end,
 					},
@@ -277,7 +288,7 @@ return {
 							title_generation_opts = {
 								-- use lightweight model to avoid exhausting premium interactions:
 								adapter = "copilot",
-								model = "gpt-4o",
+								model = "gpt-5-mini",
 								-- refresh before and after the first prompt so that user prompt is considered:
 								refresh_every_n_prompts = 1,
 								max_refreshes = 2,
