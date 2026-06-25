@@ -26,7 +26,8 @@ alias xd='x dwm'
 alias xf='x xfce4'
 
 # tmux:
-alias tmux='tmux -T 256,clipboard' # force 256 colors & clipboard support
+# (force 256 colors & clipboard support; source all tmux/conf.d files)
+alias tmux='tmux -T 256,clipboard $(ls ~/.config/tmux/conf.d/*.conf > /dev/null 2>&1 && printf " -f %s" ~/.config/tmux/conf.d/*.conf)'
 alias t=tmux
 alias ta='tmux attach'
 
