@@ -29,6 +29,7 @@ end
 return {
 	{ "gpanders/editorconfig.nvim" },
 	{ "tpope/vim-eunuch" },
+	{ "tpope/vim-repeat" },
 	{ "tpope/vim-speeddating" },
 	{ "tpope/vim-surround" },
 	{
