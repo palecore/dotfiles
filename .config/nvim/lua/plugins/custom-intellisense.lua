@@ -151,7 +151,6 @@ return {
 						keyOrdering = false,
 						schemas = {
 							["https://json.schemastore.org/github-workflow.json"] = "/.github/workflows/*",
-							["https://raw.githubusercontent.com/instrumenta/kubernetes-json-schema/master/v1.9.9-standalone-strict/pod.json"] = "*pod.y*ml",
 							["https://kubernetesjsonschema.dev/v1.14.0/deployment-apps-v1.json"] = {
 								"*deployment.y*ml",
 								"*deploy.y*ml",
@@ -160,6 +159,7 @@ return {
 								"*service.y*ml",
 								"*svc.y*ml",
 							},
+							["https://raw.githubusercontent.com/instrumenta/kubernetes-json-schema/master/v1.9.9-standalone-strict/pod.json"] = "*pod.y*ml",
 						},
 					},
 				},
