@@ -225,6 +225,9 @@ return {
 						},
 					},
 					chat = {
+						keymaps = {
+							options = { modes = { n = "g?" } },
+						},
 						adapter = {
 							name = "copilot",
 							model = "claude-sonnet-4.6",
