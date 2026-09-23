@@ -1,25 +1,6 @@
 local function gh_buf_toggle() return require("palecore.gh-copilot").buf_toggle() end
 local function gh_global_disable() return require("palecore.gh-copilot").global_disable() end
 
-local my_avail_models = {
-	"claude-opus-4.6", ------ $ 5.00 /  .50  / 25.00
-	"claude-sonnet-4.6", ---- $ 3.00 /  .30  / 15.00
-	"gpt-5.4", -------------- $ 2.50 /  .25  / 15.00
-	"gpt-5.3-codex", -------- $ 1.75 /  .175 / 14.00
-	"gemini-2.5-pro", ------- $ 1.25 /  .125 / 10.00
-	"gemini-3.5-flash", ----- $ 1.50 /  .15  /  9.00
-	"claude-haiku-4.5", ----- $ 1.00 /  .10  /  5.00
-	"gpt-5.4-mini", --------- $  .75 /  .075 /  4.50
-	"gpt-5-mini", ----------- $  .25 /  .025 /  2.00
-}
-
-local my_fav_models = {
-	"claude-opus-4.6",
-	"claude-sonnet-4.6",
-	"gpt-5.3-codex",
-	"claude-haiku-4.5",
-}
-
 --- @type string Caveman skill prompt, distilled from JuliusBrussee/caveman (MIT) SKILL.md.
 local caveman_prompt = [[
 You are now in CAVEMAN MODE. Respond terse like smart caveman.
@@ -191,30 +172,6 @@ return {
 					show_line_numbers = true,
 					highlight_added = "DiffAdd",
 					highlight_removed = "DiffDelete",
-				},
-				adapters = {
-					http = {
-						copilot_best = function()
-							return require("codecompanion.adapters").extend("copilot", {
-								schema = { model = { default = my_fav_models[1], choices = my_avail_models } },
-							})
-						end,
-						copilot_betr = function()
-							return require("codecompanion.adapters").extend("copilot", {
-								schema = { model = { default = my_fav_models[2], choices = my_avail_models } },
-							})
-						end,
-						copilot_good = function()
-							return require("codecompanion.adapters").extend("copilot", {
-								schema = { model = { default = my_fav_models[3], choices = my_avail_models } },
-							})
-						end,
-						copilot_lite = function()
-							return require("codecompanion.adapters").extend("copilot", {
-								schema = { model = { default = my_fav_models[4], choices = my_avail_models } },
-							})
-						end,
-					},
 				},
 				interactions = {
 					shared = {
