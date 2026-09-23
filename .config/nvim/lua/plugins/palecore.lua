@@ -123,6 +123,7 @@ return {
 	},
 	{
 		"github/copilot.vim",
+		lazy = false,
 		cmd = "Copilot",
 		init = function()
 			-- by default, disable copilot for all filetypes:
