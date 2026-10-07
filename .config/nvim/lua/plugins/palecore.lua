@@ -195,39 +195,53 @@ return {
 						},
 						tools = {
 							groups = {
-								["develop"] = {
+								develop = {
 									description = "Custom comprehensive skillset for development",
 									system_prompt = "You have access to the following tools:"
+										.. " interrupting to ask clarifying questions to the user;"
 										.. " reading, searching and grepping through local files;"
-										.. " writing and creating local files;"
+										.. " getting git changes and diagnostics for given local files;"
+										.. " deleting, writing and creating files in the working directory;"
 										.. (vim.g.codecompanion_nvim_use_memory and " saving and retrieving conversation memory;" or "")
-										.. " and fetching webpages.",
+										.. " and searching the web and fetching webpages.",
 									tools = {
+										"ask_questions",
 										"create_file",
 										"delete_file",
 										"fetch_webpage",
 										"file_search",
 										"files",
+										"get_changed_files",
+										"get_diagnostics",
 										"grep_search",
 										"insert_edit_into_file",
 										"read_file",
+										"search_help",
+										"web_search",
 										vim.g.codecompanion_nvim_use_memory and "memory" or nil,
 									},
 									opts = {
 										collapse_tools = false, -- show tools separately
 									},
 								},
-								["research"] = {
+								research = {
 									description = "Custom comprehensive skillset for research",
 									system_prompt = "You have access to the following tools:"
+										.. " interrupting to ask clarifying questions to the user;"
 										.. " reading, searching and grepping through local files;"
+										.. " getting git changes and diagnostics for given local files;"
 										.. (vim.g.codecompanion_nvim_use_memory and " saving and retrieving conversation memory;" or "")
-										.. " and fetching webpages.",
+										.. " and searching the web and fetching webpages.",
 									tools = {
+										"ask_questions",
 										"fetch_webpage",
 										"file_search",
+										"get_changed_files",
+										"get_diagnostics",
 										"grep_search",
 										"read_file",
+										"search_help",
+										"web_search",
 										vim.g.codecompanion_nvim_use_memory and "memory" or nil,
 									},
 									opts = {
