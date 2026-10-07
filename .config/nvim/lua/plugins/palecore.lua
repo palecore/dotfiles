@@ -250,7 +250,13 @@ return {
 						},
 					},
 				},
-						},
+				skills = {
+					dirs = {
+						"~/.config/codecompanion/skills", -- Personal skills
+						".codecompanion/skills", -- Project skills
+						"~/.claude/skills", -- Claude Code's personal skills
+						".claude/skills", -- Claude Code's project skills
+						".github/skills", -- GitHub Copilot project skills
 					},
 				},
 				extensions = {
