@@ -270,6 +270,7 @@ return {
 		config = function()
 			require("monokai-nightasty").setup({})
 			require("monokai-nightasty").load()
+			vim.api.nvim_set_hl(0, "ColorColumn", { bg = "#2a2a2a" })
 		end,
 	},
 }
