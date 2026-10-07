@@ -64,6 +64,9 @@ local function cmd_tool(spec, dependencies)
 				local chat = meta.tools.chat
 				local cmd_string = spec.build_cmd(self.args)
 				local errors = vim.iter(stderr):flatten():join("\n")
+				if spec.map_output_fn then
+					errors = spec.map_output_fn(errors)
+				end
 
 				local content = form_codeblock(errors, { ft = "txt" })
 				local exit_code = meta.cmd and meta.cmd.code
@@ -103,6 +106,9 @@ local function cmd_tool(spec, dependencies)
 			local chat = meta.tools.chat
 			if stdout then
 				local output = vim.iter(stdout[#stdout]):flatten():join("\n")
+				if spec.map_output_fn then
+					output = spec.map_output_fn(output)
+				end
 				local content = fmt("`%s`\n%s", spec.build_cmd(self.args), form_codeblock(output))
 				return add_tool_output(chat, self, content, "")
 			end
@@ -134,6 +140,7 @@ local M = {}
 ---@field legal_args? boolean|Palecore.CommandArgumentRule[]
 ---@field illegal_args? Palecore.CommandArgumentRule[]
 ---@field stderr? boolean
+---@field map_output_fn? fun(output: string): string transforms the command's output before it's delivered to the LLM and user; for example, it can be used to redact sensitive information
 
 local function shell_escape(argument)
 	return vim.fn.shellescape(argument)
@@ -380,6 +387,7 @@ function M.make_specific_system_cmd_tool_spec(spec, dependencies)
 		stderr = spec.stderr ~= false,
 		description = discovery_description,
 		system_prompt = discovery_description,
+		map_output_fn = spec.map_output_fn,
 		schema = {
 			properties = has_agent_arguments and {
 				agent_arguments = {
