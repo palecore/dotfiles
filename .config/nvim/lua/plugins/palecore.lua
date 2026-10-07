@@ -188,7 +188,7 @@ return {
 						},
 						adapter = {
 							name = "copilot",
-							model = "claude-sonnet-4.6",
+							model = "gpt-6-luna", -- good default to not run an easy prompt on an expensive model
 						},
 						slash_commands = {
 							caveman = caveman_slash_command,
@@ -240,7 +240,16 @@ return {
 					inline = {
 						adapter = {
 							name = "copilot",
-							model = "claude-sonnet-4.6",
+							model = "gpt-6-luna", -- suprisingly cheap
+						},
+					},
+					cmd = {
+						adapter = {
+							name = "copilot",
+							model = "gpt-6-luna", -- suprisingly cheap
+						},
+					},
+				},
 						},
 					},
 				},
@@ -254,7 +263,7 @@ return {
 							title_generation_opts = {
 								-- use lightweight model to avoid exhausting premium interactions:
 								adapter = "copilot",
-								model = "gpt-5-mini",
+								model = "gpt-6-luna", -- suprisingly cheap
 								-- refresh before and after the first prompt so that user prompt is considered:
 								refresh_every_n_prompts = 1,
 								max_refreshes = 2,
