@@ -95,7 +95,7 @@ return {
 		opts = {},
 	},
 	{
-		"ggandor/leap.nvim",
+		"https://codeberg.org/andyg/leap.nvim",
 		lazy = false,
 		init = function()
 			vim.keymap.set({ "n", "x", "o" }, "s", "<Plug>(leap)")
