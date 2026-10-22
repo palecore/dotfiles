@@ -161,11 +161,23 @@ return {
 		end,
 		config = function()
 			require("codecompanion").setup({
-				-- [!TIP] set `g:codecompanion_nvim_open_in_curr_buf` to `true`
-				-- to open CodeCompanion Chat window in the current window:
-				display = (vim.g.codecompanion_nvim_open_in_curr_win and {
-					chat = { window = { layout = "buffer" } },
-				} or {}),
+				display = {
+					chat = {
+						icons = {
+							chat_context = "📎️ ",
+							chat_fold = "📦 ",
+							sync_all = "⚡ ",
+							sync_diff = "♻️ ",
+							tool_failure = "❌ ",
+							tool_in_progress = "⌛ ",
+							tool_pending = "⏳  ",
+							tool_success = "✅ ",
+						},
+						-- [!TIP] set `g:codecompanion_nvim_open_in_curr_buf` to `true`
+						-- to open CodeCompanion Chat window in the current window:
+						window = (vim.g.codecompanion_nvim_open_in_curr_win and { layout = "buffer" } or {}),
+					},
+				},
 				diff_view = {
 					layout = "inline",
 					context_lines = 3,
