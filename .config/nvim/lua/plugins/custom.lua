@@ -1,5 +1,25 @@
 ---My custom neovim configuration.
 
+local function codecompanion_model_def()
+	return {
+		function()
+			local _, codecompanion = pcall(require, "codecompanion")
+			if not codecompanion then return "" end
+			--
+			local chat_info = codecompanion.last_chat()
+			if not chat_info then return "" end
+			--
+			local curr_bufnr = vim.api.nvim_get_current_buf()
+			local chat_bufnr = chat_info.bufnr
+			if not chat_bufnr or chat_bufnr ~= curr_bufnr then return "" end
+			--
+			local model_name = (((chat_info or {}).adapter or {}).model or {}).name or ""
+			return model_name
+		end,
+		color = { fg = "#272822", bg = "#66d9ef" },
+	}
+end
+
 local function shred_nonempty_file()
 	local filepath = vim.api.nvim_buf_get_name(0)
 	if filepath == "" then
@@ -86,7 +106,11 @@ return {
 				},
 				sections = {
 					lualine_b = { custom_branch, "diff", custom_diagnostics },
-					lualine_x = { "encoding", require("palecore.gh-copilot").buf_status_def() },
+					lualine_x = {
+						"encoding",
+						codecompanion_model_def(),
+						require("palecore.gh-copilot").buf_status_def(),
+					},
 					lualine_y = { custom_fileformat, "filetype" },
 					lualine_z = { "progress", "location" },
 				},
