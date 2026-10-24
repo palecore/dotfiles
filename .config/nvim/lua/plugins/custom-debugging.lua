@@ -160,8 +160,10 @@ return {
 				-- DP: toggle conditional breakpoint
 				{ "<leader>dP", dap_put_cond_bp, desc = "DAP: put conditional breakpoint" },
 				{ "<leader>DP", dap_put_cond_bp, desc = "DAP: put conditional breakpoint" },
-				-- dq: clear breakpoints
-				{ "<leader>dq", dap_clear_breakpoints, desc = "clear DAP breakpoints" },
+				-- dQ: clear breakpoints
+				{ "<leader>dQ", dap_clear_breakpoints, desc = "clear DAP breakpoints" },
+				{ "<leader>Dq", dap_clear_breakpoints, desc = "clear DAP breakpoints" },
+				{ "<leader>DQ", dap_clear_breakpoints, desc = "clear DAP breakpoints" },
 				-- DQ: terminate session
 				{ "<leader>dQ", dap_terminate, desc = "DAP: terminate session" },
 				{ "<leader>Dq", dap_terminate, desc = "DAP: terminate session" },
