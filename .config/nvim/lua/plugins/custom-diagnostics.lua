@@ -1,22 +1,40 @@
-local function trouble_open_mixed_buf()
-	require("trouble.api").open({
+local function trouble_close()
+	require("trouble").close({ mode = "diagnostics" })
+	require("trouble").close({ mode = "symbols" })
+end
+
+local function trouble_toggle_diagno_buf()
+	require("trouble").toggle({
 		filter = { buf = 0 },
 		mode = "diagnostics",
-		sections = { "diagnostics", "symbols" },
 	})
 end
 
-local function trouble_open_mixed_all()
-	require("trouble.api").open({
+local function trouble_toggle_diagno_all()
+	require("trouble").toggle({
 		mode = "diagnostics",
-		sections = { "diagnostics", "symbols" },
 	})
 end
 
-local function trouble_open_refs() require("trouble.api").open({ mode = "lsp_references" }) end
+local function trouble_toggle_symbols_buf()
+	require("trouble").toggle({
+		filter = { buf = 0 },
+		mode = "symbols",
+		focus = true,
+	})
+end
+
+local function trouble_toggle_symbols_all()
+	require("trouble").toggle({
+		mode = "symbols",
+		focus = true,
+	})
+end
+
+local function trouble_open_refs() require("trouble").open({ mode = "lsp_references" }) end
 
 local function trouble_open_defs()
-	require("trouble.api").open({
+	require("trouble").open({
 		mode = "lsp_definitions",
 	})
 end
@@ -30,7 +48,8 @@ return {
 	---@type trouble.Config
 	opts = {
 		auto_jump = true,
-		open_no_results = true,
+		open_no_results = false,
+		warn_no_results = true,
 		focus = true,
 		multiline = false,
 		---@type trouble.Window.opts
@@ -96,28 +115,53 @@ return {
 	keys = {
 		{
 			"<leader>di",
-			trouble_open_mixed_buf,
-			id = "trouble_open_mixed_buf",
-			desc = "Open Buffer Trouble View",
+			trouble_toggle_diagno_buf,
+			id = "trouble_toggle_diagno_buf",
+			desc = "Toggle Buffer Issues",
 		},
 		{
 			"<leader>dI",
-			trouble_open_mixed_all,
-			id = "trouble_open_mixed_all1",
-			desc = "Open Global Trouble View",
+			trouble_toggle_diagno_all,
+			id = "trouble_toggle_diagno_all1",
+			desc = "Toggle Global Issues",
 		},
 		{
 			"<leader>Di",
-			trouble_open_mixed_all,
-			id = "trouble_open_mixed_all2",
-			desc = "Open Global Trouble View",
+			trouble_toggle_diagno_all,
+			id = "trouble_toggle_diagno_all2",
+			desc = "Toggle Global Issues",
 		},
 		{
 			"<leader>DI",
-			trouble_open_mixed_all,
-			id = "trouble_open_mixed_all3",
-			desc = "Open Global Trouble View",
+			trouble_toggle_diagno_all,
+			id = "trouble_toggle_diagno_all3",
+			desc = "Toggle Global Issues",
 		},
+		{
+			"<leader>do",
+			trouble_toggle_symbols_buf,
+			id = "trouble_toggle_symbols_buf",
+			desc = "Toggle Buffer Symbols",
+		},
+		{
+			"<leader>dO",
+			trouble_toggle_symbols_all,
+			id = "trouble_toggle_symbols_all1",
+			desc = "Toggle Global Symbols",
+		},
+		{
+			"<leader>Do",
+			trouble_toggle_symbols_all,
+			id = "trouble_toggle_symbols_all2",
+			desc = "Toggle Global Symbols",
+		},
+		{
+			"<leader>DO",
+			trouble_toggle_symbols_all,
+			id = "trouble_toggle_symbols_all3",
+			desc = "Toggle Global Symbols",
+		},
+		{ "<leader>dq", trouble_close, id = "trouble_close", desc = "Close Trouble View" },
 	},
 	config = function(_, opts)
 		require("trouble").setup(opts)
