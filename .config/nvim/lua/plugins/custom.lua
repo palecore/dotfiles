@@ -89,7 +89,14 @@ return {
 	{
 		"nvim-lualine/lualine.nvim",
 		config = function()
-			local custom_branch = { "branch", icon = "|-" }
+			local custom_branch = {
+				"branch",
+				icon = "|-",
+				fmt = function(str)
+					if str:len() > 30 then return str:sub(1, 29) .. "…" end
+					return str
+				end,
+			}
 			local custom_diagnostics = {
 				"diagnostics",
 				symbols = { error = "E", warn = "W", info = "I", hint = "H" },
