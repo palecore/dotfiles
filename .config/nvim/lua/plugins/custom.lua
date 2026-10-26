@@ -364,44 +364,82 @@ return {
 				)
 			end
 
-			local function paste_rich_as_html()
+			local function paste_rich_as_markdown()
 				local self = {}
 				function self:start() self:powershell_get_rich_clip_html() end
 				function self:powershell_get_rich_clip_html()
+					-- Both Get-Clipboard and .NET Clipboard decode CF_HTML (UTF-8) with the ANSI code
+					-- page, causing mojibake. Read the raw bytes via Win32 and write them unchanged.
+					local ps_script = [[
+Add-Type -TypeDefinition @'
+using System;
+using System.Runtime.InteropServices;
+public class RawClip {
+  [DllImport("user32.dll")] static extern bool OpenClipboard(IntPtr h);
+  [DllImport("user32.dll")] static extern bool CloseClipboard();
+  [DllImport("user32.dll", CharSet=CharSet.Unicode)] static extern uint RegisterClipboardFormat(string n);
+  [DllImport("user32.dll")] static extern IntPtr GetClipboardData(uint f);
+  [DllImport("kernel32.dll")] static extern IntPtr GlobalLock(IntPtr h);
+  [DllImport("kernel32.dll")] static extern bool GlobalUnlock(IntPtr h);
+  [DllImport("kernel32.dll")] static extern UIntPtr GlobalSize(IntPtr h);
+  public static byte[] Get() {
+    if (!OpenClipboard(IntPtr.Zero)) return null;
+    try {
+      IntPtr h = GetClipboardData(RegisterClipboardFormat("HTML Format"));
+      if (h == IntPtr.Zero) return null;
+      IntPtr p = GlobalLock(h);
+      try {
+        int n = (int)(ulong)GlobalSize(h);
+        byte[] b = new byte[n];
+        Marshal.Copy(p, b, 0, n);
+        return b;
+      } finally { GlobalUnlock(h); }
+    } finally { CloseClipboard(); }
+  }
+}
+'@
+$b = [RawClip]::Get()
+if ($b -eq $null) { [Console]::Error.WriteLine('No HTML on clipboard'); exit 1 }
+$o = [Console]::OpenStandardOutput()
+$o.Write($b, 0, $b.Length)
+$o.Flush()
+]]
+					-- -EncodedCommand takes base64 of UTF-16LE (script is pure ASCII):
+					local encoded = vim.base64.encode((ps_script:gsub("\r?\n", "\r\n"):gsub(".", "%0\0")))
 					vim.system({
 						"powershell.exe",
 						"-NoProfile",
-						"-Command",
-						"Get-Clipboard -TextFormatType Html -Raw",
+						"-NonInteractive",
+						"-EncodedCommand",
+						encoded,
 					}, {}, function(ps_out)
 						if ps_out.code ~= 0 then
 							local msg = "Failed to get clipboard HTML: " .. (ps_out.stderr or "")
 							vim.notify(msg, vim.log.levels.ERROR)
 							return
 						end
-						local html_text = (ps_out.stdout or "")
+						local html_text = (ps_out.stdout or ""):gsub("%z+$", "")
 						self:extract_html_body(html_text)
 					end)
 				end
 				function self:extract_html_body(html_text)
 					local body = html_text:match("<body[^>]*>(.-)</body>") or html_text
-					self:iconv_from_latin1_to_utf8(body)
+					body = self:clean_html(body)
+					self:pandoc_from_html_to_gfm(body)
 				end
-				function self:iconv_from_latin1_to_utf8(latin1_text)
-					vim.system(
-						{ "iconv", "-f", "latin1", "-t", "utf-8" },
-						{ stdin = latin1_text, stdout = true },
-						function(iconv_out)
-							if iconv_out.code ~= 0 then
-								local msg = "Failed to convert clipboard HTML from latin1 to utf-8: "
-									.. (iconv_out.stderr or "")
-								vim.notify(msg, vim.log.levels.ERROR)
-								return
-							end
-							local utf8_text = iconv_out.stdout or ""
-							self:pandoc_from_html_to_gfm(utf8_text)
-						end
-					)
+				function self:clean_html(html_text)
+					-- Clipboard HTML often wraps text in noisy span elements. Keep text, drop tags.
+					html_text = html_text:gsub("<span[^>]*>", ""):gsub("</span>", "")
+
+					-- Keep only href on links. Pandoc then converts these minimal HTML links
+					-- to Markdown links, ignoring styling and clipboard-specific metadata.
+					html_text = html_text:gsub("(<a%s+.-%s*>)(.-)(</a%s*>)", function(opening, text, closing)
+						local href = opening:match("href%s*=%s*[\"']([^\"']-)[\"']")
+						if not href then return text end
+						return '<a href="' .. href .. '">' .. text .. closing
+					end)
+
+					return html_text
 				end
 				function self:pandoc_from_html_to_gfm(html_utf8_text)
 					vim.system(
